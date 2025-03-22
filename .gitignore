@@ -41,25 +41,15 @@ replay_pid*
 
 # The following files are generated/updated by vaadin-maven-plugin
 node_modules/
-src/main/frontend/generated/
-pnpmfile.js
-vite.generated.ts
+frontend/src/main/frontend
+frontend/target
+restAPI/target
 
 # Autogenertaed by build
-drivers/
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+!.mvn/wrapper/maven-wrapper.jar
+
+
 
 
 
