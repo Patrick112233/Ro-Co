@@ -26,14 +26,14 @@ replay_pid*
 
 
 # Idea
-.idea/
-.vscode/
 .settings
 .project
 .classpath
-
-# Build
-/target/
+.idea
+*.iws
+*.iml
+*.ipr
+.vscode/
 
 #Vadin:
 *.iml
@@ -45,7 +45,21 @@ src/main/frontend/generated/
 pnpmfile.js
 vite.generated.ts
 
-# Browser drivers for local integration tests
+# Autogenertaed by build
 drivers/
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
 
 
