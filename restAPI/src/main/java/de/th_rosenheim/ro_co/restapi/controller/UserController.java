@@ -20,8 +20,8 @@ public class UserController {
     }
 
     @GetMapping("/user/{id}")
-    public User getUser(@PathVariable Integer id){
-        Optional<User> user = userService.getUser();
+    public User getUser(@PathVariable int id){
+        Optional<User> user = userService.getUser(id);
         return user.orElse(null);
     }
 }
