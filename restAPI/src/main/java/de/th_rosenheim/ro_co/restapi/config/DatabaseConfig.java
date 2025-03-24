@@ -10,6 +10,6 @@ class DatabaseConfig extends AbstractMongoClientConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return "ro-co-database";
+        return "RoCoDB";
     }
 }
