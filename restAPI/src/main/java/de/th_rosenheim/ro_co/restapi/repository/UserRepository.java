@@ -2,17 +2,23 @@ package de.th_rosenheim.ro_co.restapi.repository;
 
 import de.th_rosenheim.ro_co.restapi.model.Skill;
 import de.th_rosenheim.ro_co.restapi.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.repository.PagingAndSortingRepository;
-
 import java.util.HashSet;
 
-public interface UserRepository extends PagingAndSortingRepository<User, String> {
+/**
+ * @see https://docs.spring.io/spring-data/data-mongo/docs/1.5.0.RELEASE/reference/html/mongo.repositories.html
+ */
+public interface UserRepository extends MongoRepository<User, Long> {
 
-    @Query("{skills: '?0'}")
-    public User findBySkill(Skill skill);
+    @Query("{skills: {'$in': '?0'}}")
+    Page<User> findBySkills(HashSet<Skill> skills, Pageable pageable);
+
+    Long deleteById(long id);
 
     public long count();
 
-    User findById(int id);
+    User findById(long id);
 }

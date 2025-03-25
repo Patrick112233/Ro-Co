@@ -3,45 +3,48 @@ package de.th_rosenheim.ro_co.restapi.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 @Document("Member")
 public class User {
 
     @Id
-    private int id;
-    private String name;
-    private String email;
+    private long id;
+    private String firstName;
+    private String lastName;
+    //@ToDo: add communicator!
+    //private ArrayList<Communicator> communicators;
     private HashSet<Skill> skills;
 
     public User(int id, String name, String email) {
         super();
         this.id = id;
-        this.name = name;
-        this.email = email;
+        this.firstName = name;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getName() {
-        return name;
+        return this.firstName + " " + this.lastName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getEmail() {
-        return email;
+    public String getLastName() {return lastName;}
+
+    public HashSet<Skill> getSkills() {return skills;}
+
+    public void setSkills(HashSet<Skill> skills) {this.skills = skills;}
+
+    public void setFirstName(String name) {
+        this.firstName = name;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public void setLastName(String lastName) {this.lastName = lastName;}
+
 }
