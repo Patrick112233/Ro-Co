@@ -8,17 +8,16 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import java.util.HashSet;
 
-/**
- * @see https://docs.spring.io/spring-data/data-mongo/docs/1.5.0.RELEASE/reference/html/mongo.repositories.html
- */
-public interface UserRepository extends MongoRepository<User, Long> {
 
+public interface UserRepository extends MongoRepository<User, String> {
+
+    /*
     @Query("{skills: {'$in': '?0'}}")
     Page<User> findBySkills(HashSet<Skill> skills, Pageable pageable);
+    */
 
-    Long deleteById(long id);
+    void deleteById(String id);
 
     public long count();
 
-    User findById(long id);
 }

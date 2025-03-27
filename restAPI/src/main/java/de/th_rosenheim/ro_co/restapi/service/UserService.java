@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Optional;
 
 import de.th_rosenheim.ro_co.restapi.model.User;
 
@@ -18,8 +17,10 @@ public class UserService {
     @Autowired
     private UserRepository repository;
 
-    public Optional<User> getUser(long id) {
-        return Optional.ofNullable(repository.findById(id));
+    public User getUser(String id) {
+        //manage Optional
+        //Manage DTO!
+        return repository.findById(id).get();
     }
 
     public Page<User> getAllUsers(int page, int size) {
@@ -31,13 +32,15 @@ public class UserService {
         return repository.insert(user);
     }
 
-    public User updateUser(long id, User updatedUser) {
-        User newUser;
-        if ( updatedUser.getId() != id) {
+    public User updateUser(String id, User updatedUser) {
+        if (!updatedUser.getId().equals(id)) {
             throw new IllegalArgumentException("Invalid user ID.");
         }
         return repository.save(updatedUser);
+    }
 
+    public void deleteUser(String id) {
+        repository.deleteById(id);
     }
 
 }

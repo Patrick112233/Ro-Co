@@ -7,13 +7,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Skill{
 
     @Id
-    public String name;
-    public int colorValue = 0x00000000;
+    private String name;
+    private int colorValue = 0x00000000;
 
     public Skill(String name, int colorValue) {
         super();
         this.name = name;
         this.setColorValue(colorValue);
+    }
+
+    public int getColorValue() {
+        return colorValue;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setColorValue(int colorValue) {
@@ -24,3 +32,5 @@ public class Skill{
         }
     }
 }
+
+

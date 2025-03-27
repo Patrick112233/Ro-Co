@@ -1,6 +1,10 @@
 # Ro-Co
 
 
+## Trouble Shooting:
+- Preprocessor is failing:
+  ./mvnw org.apache.maven.plugins:maven-install-plugin:3.1.3:install-file -Dfile='lombok.jar' -DgroupId='org.projectlombok' -DartifactId='lombok' -Dversion='1.18.36+d9d0767b' -Dpackaging='jar'
+
 
 
 # Doc

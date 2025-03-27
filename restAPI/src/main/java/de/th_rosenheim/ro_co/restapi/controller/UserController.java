@@ -1,14 +1,19 @@
 package de.th_rosenheim.ro_co.restapi.controller;
 
+import de.th_rosenheim.ro_co.restapi.DTO.UserDTO;
+import de.th_rosenheim.ro_co.restapi.DTO.UserMapper;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -22,39 +27,58 @@ public class UserController {
 
     @GetMapping("/user/{id}")
     @Operation(summary = "Get user by ID", description = "Retrieve the details of a user by their unique ID.")
-    public User getUser(@PathVariable long id) {
-        Optional<User> user = userService.getUser(id);
-        return user.orElse(null);
+    public ResponseEntity<UserDTO> getUser(@PathVariable String id) {
+        User user = userService.getUser(id);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        UserDTO userDTO = new UserDTO(user.getId(), user.getFirstName(), user.getLastName());
+        return ResponseEntity.ok(userDTO);
     }
 
-
-    @PostMapping("/user")
     @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
-    public User createUser(@RequestBody User newUser) {
-        return this.userService.saveUser(newUser);
+    @PostMapping(value = "/user", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO inUserDTO) {
+
+        User inUser = UserMapper.INSTANCE.userDtotoUser(inUserDTO);
+        User dbUser = userService.saveUser(inUser);
+        UserDTO outUser = UserMapper.INSTANCE.userToUserDto(dbUser);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(outUser.id)
+                .toUri();
+        return ResponseEntity.created(uri).body(outUser);
     }
 
-
+/*
     @PutMapping("/user/{id}")
     @Operation(summary = "Update user by ID", description = "Update an existing user's details using their unique ID.")
-    public User updateUser(@PathVariable long id, @RequestBody User updatedUser){
-        return this.userService.updateUser(id, updatedUser);
+    public ResponseEntity<User>  updateUser(@PathVariable long id, @RequestBody User updatedUser){
+        User user = this.userService.updateUser(id,updatedUser);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(user.getId())
+                .toUri();
+        return ResponseEntity.created(uri).body(user);
     }
 
 
     @GetMapping("/users")
     @Operation(summary = "Get all users", description = "Retrieve a paginated list of users based on the provided page and size.")
-    public List<User> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<User>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         if (page < 0 || size < 1 || size > 100) {
             throw new IllegalArgumentException("Invalid page or size parameters.");
         }
         Page<User> users = this.userService.getAllUsers(page, size);
-        return users.getContent();
+        return ResponseEntity.ok(users.getContent());
     }
 
     @DeleteMapping("/user/{id}")
     @Operation(summary = "Delete user by ID", description = "Remove a user from the system by their unique ID.")
-    public void deleteUser(@PathVariable long id) {
+    public ResponseEntity<Object> deleteUser(@PathVariable long id) {
         this.userService.deleteUser(id);
-    }
+        return ResponseEntity.noContent().build();
+    }*/
 }
