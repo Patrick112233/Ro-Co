@@ -1,5 +1,6 @@
 package de.th_rosenheim.ro_co.restapi.controller;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import de.th_rosenheim.ro_co.restapi.DTO.UserDTO;
 import de.th_rosenheim.ro_co.restapi.DTO.UserMapper;
 import de.th_rosenheim.ro_co.restapi.model.User;
@@ -40,16 +41,12 @@ public class UserController {
     @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
     @PostMapping(value = "/user", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO inUserDTO) {
-
-        User inUser = UserMapper.INSTANCE.userDtotoUser(inUserDTO);
-        User dbUser = userService.saveUser(inUser);
-        UserDTO outUser = UserMapper.INSTANCE.userToUserDto(dbUser);
-
+        UserDTO outUserDTO = userService.saveUser(inUserDTO);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(outUser.id)
+                .buildAndExpand(outUserDTO.getId())
                 .toUri();
-        return ResponseEntity.created(uri).body(outUser);
+        return ResponseEntity.created(uri).body(outUserDTO);
     }
 
 /*

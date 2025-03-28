@@ -31,13 +31,13 @@ services:
     restart: always
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: RoCoDB
+    #environment:
+      #MONGO_INITDB_ROOT_USERNAME: backend
+      #MONGO_INITDB_ROOT_PASSWORD: fnwMSjCDyc
+      #MONGO_INITDB_DATABASE: RoCoDB
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      - db-data:/data/db
+      #- db-data:/data/db
 
   mongo-express:
     image: mongo-express
@@ -45,9 +45,9 @@ services:
     ports:
       - 8082:8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://admin:root@mongo:27017/
       ME_CONFIG_BASICAUTH: false
 
 volumes:

@@ -1,5 +1,7 @@
 package de.th_rosenheim.ro_co.restapi.service;
 
+import de.th_rosenheim.ro_co.restapi.DTO.UserDTO;
+import de.th_rosenheim.ro_co.restapi.DTO.UserMapper;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 
 
 import de.th_rosenheim.ro_co.restapi.model.User;
+
+import java.util.UUID;
 
 //https://www.bezkoder.com/spring-boot-mongodb-pagination/
 
@@ -28,8 +32,11 @@ public class UserService {
         return repository.findAll(pageRequest);
     }
 
-    public User saveUser(User user) {
-        return repository.insert(user);
+    public UserDTO saveUser(UserDTO inUserDto) {
+        User inUser = UserMapper.INSTANCE.inUserDtotoUser(inUserDto);
+        inUser.setId(UUID.randomUUID().toString());
+        User dbUser = repository.insert(inUser);
+        return UserMapper.INSTANCE.userToUserDto(dbUser);
     }
 
     public User updateUser(String id, User updatedUser) {

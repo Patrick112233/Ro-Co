@@ -1,12 +1,16 @@
-db.createUser(
-    {
-        user: "backend",
-        pwd: "O25{4Rx3,:n^>f£N<",
-        roles: [
-            {
-                role: "readWrite",
-                db: "RoCoDB"
-            }
-        ]
-    }
-);
+db = db.getSiblingDB("RoCoDB");
+//db.createCollection("dummyCollection"); // Dummy collection to create the DB
+
+//print("Started Adding the Users.");
+db.createUser({
+    user: "backend",
+    pwd: "fnwMSjCDyc",
+    roles: [{ role: "readWrite", db: "RoCoDB" }],
+});
+db = db.getSiblingDB("admin");
+db.createUser({
+    user: "admin",
+    pwd: "root",
+    roles: [{ role: "readWrite", db: "admin" }],
+});
+print("End Adding the User Roles.")
