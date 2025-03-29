@@ -17,6 +17,13 @@ public class UserDTO {
         this.email = email;
     }
 
+    /**
+     * Default constructor for UserDTO.
+     * This constructor is used by the Mapping framework to create instances of UserDTO.
+     */
+    public UserDTO() {}
+
+
     public String getId() {
         return id;
     }

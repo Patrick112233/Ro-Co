@@ -37,7 +37,7 @@ services:
       #MONGO_INITDB_DATABASE: RoCoDB
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      #- db-data:/data/db
+      - db-data:/data/db
 
   mongo-express:
     image: mongo-express

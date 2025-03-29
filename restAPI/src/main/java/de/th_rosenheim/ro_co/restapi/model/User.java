@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+
 @Document(collection="User")
 public class User{
 
@@ -26,6 +27,11 @@ public class User{
     }
 
     public void setId(String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        } else if (this.id != null) {
+            throw new IllegalArgumentException("ID is already set");
+        }
         this.id = id;
     }
 
@@ -75,4 +81,6 @@ public class User{
     public void setEmail(String email) {
         this.email = email;
     }
+
+
 }
