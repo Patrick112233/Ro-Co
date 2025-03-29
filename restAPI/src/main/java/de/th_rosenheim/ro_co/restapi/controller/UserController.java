@@ -6,6 +6,7 @@ import de.th_rosenheim.ro_co.restapi.DTO.UserMapper;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -28,19 +30,17 @@ public class UserController {
 
     @GetMapping("/user/{id}")
     @Operation(summary = "Get user by ID", description = "Retrieve the details of a user by their unique ID.")
-    public ResponseEntity<UserDTO> getUser(@PathVariable String id) {
-        User user = userService.getUser(id);
-        if (user == null) {
+    public ResponseEntity<UserDTO> getUser(@Valid @PathVariable String id) {
+        Optional<UserDTO> user = userService.getUser(id);
+        if (!user.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-
-        UserDTO userDTO = new UserDTO(user.getId(), user.getFirstName(), user.getLastName());
-        return ResponseEntity.ok(userDTO);
+        return ResponseEntity.ok(user.get());
     }
 
     @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
     @PostMapping(value = "/user", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO inUserDTO) {
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO inUserDTO) {
         UserDTO outUserDTO = userService.saveUser(inUserDTO);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")

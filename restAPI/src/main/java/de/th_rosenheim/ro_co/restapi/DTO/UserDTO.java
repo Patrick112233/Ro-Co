@@ -1,17 +1,20 @@
 package de.th_rosenheim.ro_co.restapi.DTO;
 
+import jakarta.validation.constraints.NotNull;
+
 public class UserDTO {
     private String id;
     private String firstName;
     private String lastName;
+    @NotNull
+    private String email;
 
-    public UserDTO() {
-    }
 
-    public UserDTO(String id, String firstName, String lastName) {
+    public UserDTO(String id, String firstName, String lastName, String email) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.email = email;
     }
 
     public String getId() {
@@ -38,4 +41,11 @@ public class UserDTO {
         this.lastName = lastName;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

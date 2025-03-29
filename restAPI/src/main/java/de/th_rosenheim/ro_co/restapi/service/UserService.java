@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 
 import de.th_rosenheim.ro_co.restapi.model.User;
 
+import java.util.Optional;
 import java.util.UUID;
 
 //https://www.bezkoder.com/spring-boot-mongodb-pagination/
@@ -21,10 +22,12 @@ public class UserService {
     @Autowired
     private UserRepository repository;
 
-    public User getUser(String id) {
-        //manage Optional
-        //Manage DTO!
-        return repository.findById(id).get();
+    public Optional<UserDTO> getUser(String id) {
+        Optional<User> user =  repository.findById(id);
+        if (!user.isPresent()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(UserMapper.INSTANCE.userToUserDto(user.get()));
     }
 
     public Page<User> getAllUsers(int page, int size) {

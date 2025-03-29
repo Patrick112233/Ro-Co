@@ -18,6 +18,7 @@ public class User{
     private String id;
     private String firstName;
     private String lastName;
+    private String email;
 
     // Getter und Setter für id
     public String getId() {
@@ -47,10 +48,11 @@ public class User{
     }
 
     // AllArgsConstructor
-    public User(String id, String firstName, String lastName) {
+    public User(String id, String firstName, String lastName, String email) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.email = email;
     }
 
     // NoArgsConstructor
@@ -64,5 +66,13 @@ public class User{
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ']';
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

@@ -13,17 +13,20 @@ public interface UserMapper {
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "firstName", source = "entity.firstName")
     @Mapping(target = "lastName", source = "entity.lastName")
+    @Mapping(target = "email", source = "entity.email")
     UserDTO userToUserDto(User entity);
 
     @Mapping(target = "id", source = "dto.id")
     @Mapping(target = "firstName", source = "dto.firstName")
     @Mapping(target = "lastName", source = "dto.lastName")
+    @Mapping(target = "email", source = "dto.email")
     User userDtotoUser(UserDTO dto);
 
 
     @Mapping(target = "id", source = "dto.id", ignore = true)
     @Mapping(target = "firstName", source = "dto.firstName")
     @Mapping(target = "lastName", source = "dto.lastName")
+    @Mapping(target = "email", source = "dto.email")
     User inUserDtotoUser(UserDTO dto);
 
 }
