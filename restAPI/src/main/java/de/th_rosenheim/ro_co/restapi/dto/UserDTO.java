@@ -1,4 +1,4 @@
-package de.th_rosenheim.ro_co.restapi.DTO;
+package de.th_rosenheim.ro_co.restapi.dto;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -6,15 +6,19 @@ public class UserDTO {
     private String id;
     private String firstName;
     private String lastName;
+    private String role;
     @NotNull
     private String email;
+    private boolean verified;
 
 
-    public UserDTO(String id, String firstName, String lastName, String email) {
+    public UserDTO(String id, String firstName, String lastName, String role, String email, boolean verified) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.role = role;
         this.email = email;
+        this.verified = verified;
     }
 
     /**
@@ -54,5 +58,21 @@ public class UserDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 }

@@ -1,16 +1,11 @@
 package de.th_rosenheim.ro_co.restapi.controller;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import de.th_rosenheim.ro_co.restapi.DTO.UserDTO;
-import de.th_rosenheim.ro_co.restapi.DTO.UserMapper;
-import de.th_rosenheim.ro_co.restapi.model.User;
+import de.th_rosenheim.ro_co.restapi.dto.UserDTO;
 import de.th_rosenheim.ro_co.restapi.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -34,17 +29,6 @@ public class UserController {
     public ResponseEntity<UserDTO> getUser(@Valid @PathVariable String id) {
         Optional<UserDTO> user = userService.getUser(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
-    @PostMapping(value = "/user", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO inUserDTO) {
-        UserDTO outUserDTO = userService.saveUser(inUserDTO);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(outUserDTO.getId())
-                .toUri();
-        return ResponseEntity.created(uri).body(outUserDTO);
     }
 
     @Operation(summary = "Update user by ID", description = "Update an existing user's details using their unique ID.")

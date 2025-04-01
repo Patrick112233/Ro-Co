@@ -1,7 +1,7 @@
 package de.th_rosenheim.ro_co.restapi.service;
 
-import de.th_rosenheim.ro_co.restapi.DTO.UserDTO;
-import de.th_rosenheim.ro_co.restapi.DTO.UserMapper;
+import de.th_rosenheim.ro_co.restapi.dto.UserDTO;
+import de.th_rosenheim.ro_co.restapi.dto.UserMapper;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +36,6 @@ public class UserService {
         }
         PageRequest pageRequest = PageRequest.of(page, size);
         return repository.findAll(pageRequest).map(UserMapper.INSTANCE::userToUserDto);
-    }
-
-    public UserDTO saveUser(UserDTO inUserDto) {
-        User inUser = UserMapper.INSTANCE.inUserDtotoUser(inUserDto);
-        User dbUser = repository.insert(inUser);
-        return UserMapper.INSTANCE.userToUserDto(dbUser);
     }
 
     public UserDTO updateUser(String id, UserDTO updatedUser) {
