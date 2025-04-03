@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<Object> resetPassword(@Valid  @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
+    public ResponseEntity<Object> resetPassword(@PathVariable String id, @Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
         this.userService.resetPassword(loginUserDto);
         return ResponseEntity.ok().build();
     }

@@ -1,6 +1,5 @@
 package de.th_rosenheim.ro_co.restapi.controller;
 
-import com.mongodb.MongoException;
 import de.th_rosenheim.ro_co.restapi.dto.ErrorDTO;
 import de.th_rosenheim.ro_co.restapi.dto.LoginResponseDto;
 import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
@@ -10,8 +9,6 @@ import de.th_rosenheim.ro_co.restapi.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.apache.tomcat.websocket.AuthenticationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

@@ -30,7 +30,7 @@ services:
     image: mongo:6.0.21
     restart: always
     ports:
-      - 27017:27017
+      - "27017:27017"
     #environment:
       #MONGO_INITDB_ROOT_USERNAME: backend
       #MONGO_INITDB_ROOT_PASSWORD: fnwMSjCDyc

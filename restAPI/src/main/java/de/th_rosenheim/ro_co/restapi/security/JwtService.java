@@ -170,7 +170,7 @@ public class JwtService {
             return keyFactory.generatePrivate(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
             logger.error(e.getMessage());
-            throw new RuntimeException("Failed to get private key", e);
+            return null;
         }
     }
 
@@ -183,7 +183,7 @@ public class JwtService {
             return keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
             logger.error(e.getMessage());
-            throw new RuntimeException("Failed to get public key", e);
+            return null;
         }
     }
 }
