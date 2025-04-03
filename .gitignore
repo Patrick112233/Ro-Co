@@ -49,6 +49,12 @@ restAPI/target
 
 !.mvn/wrapper/maven-wrapper.jar
 
+#Security
+*.cert
+*.pem
+*.p12
+*.csr
+
 
 
 

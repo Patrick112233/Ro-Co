@@ -7,33 +7,33 @@
 
 package de.th_rosenheim.ro_co.restapi.security;
 
-import io.jsonwebtoken.Jws;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import javax.crypto.SecretKey;
 
 @Service
 public class JwtService {
 
     private static final SignatureAlgorithm SIG_ALG = Jwts.SIG.ES512; //or ES256 or ES384
 
-    @Value("${security.jwt.secret-key}")
-    private String secretKey; // Base64 encoded private key
+    @Value("${security.jwt.private-key}")
+    private String secretKey;
+
+    @Value("${security.jwt.public-key}")
+    private String publicKey;
 
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
@@ -104,15 +104,15 @@ public class JwtService {
             UserDetails userDetails,
             long expiration
     ) {
-            return Jwts.
+        PrivateKey key = getSignInKey();
+        return Jwts.
                     builder()
                     .claims(extraClaims)
                     .subject(userDetails.getUsername())
                     .issuedAt(new Date(System.currentTimeMillis()))
                     .expiration(new Date(System.currentTimeMillis() + expiration))
-                    .signWith(getSignInKey(), SIG_ALG)
+                    .signWith(key, SIG_ALG)
                     .compact();
-
     }
 
     private boolean isTokenExpired(String token) {
@@ -124,21 +124,34 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        SecretKey key = (SecretKey) getSignInKey();
-        Jws<Claims> claims = Jwts.parser().
-                verifyWith(key). // decryptWith(key).
-                build().
-                parseSignedClaims(token);
-        return claims.getPayload();
+        PublicKey key = getVerificationKey();
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     private PrivateKey getSignInKey() {
         try {
-            byte[] encoded = Decoders.BASE64.decode(secretKey);
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+            byte[] keyBytes = Base64.getDecoder().decode(secretKey);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
             return keyFactory.generatePrivate(keySpec);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
+                //@TODO impl Logging
+                throw new NotImplementedException("Not implemented yet", e);
+        }
+    }
+
+
+    private PublicKey getVerificationKey() {
+        try {
+            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            byte[] keyBytes = Base64.getDecoder().decode(publicKey);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            return keyFactory.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
             //@TODO impl Logging
             throw new NotImplementedException("Not implemented yet", e);
         }

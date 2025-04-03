@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+@RequestMapping("/user")
 @RestController
 public class UserController {
 
@@ -25,14 +26,14 @@ public class UserController {
     }
 
     @Operation(summary = "Get user by ID", description = "Retrieve the details of a user by their unique ID.")
-    @GetMapping("/user/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@Valid @PathVariable String id) {
         Optional<UserDTO> user = userService.getUser(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Update user by ID", description = "Update an existing user's details using their unique ID.")
-    @PutMapping("/user/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<UserDTO>  updateUser(@PathVariable String id, @Valid @RequestBody UserDTO updatedUser){
         UserDTO outUserDTO = this.userService.updateUser(id,updatedUser);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -43,14 +44,14 @@ public class UserController {
     }
 
     @Operation(summary = "Get all users", description = "Retrieve a paginated list of users based on the provided page and size. Max size is 100.")
-    @GetMapping("/users")
+    @GetMapping("/all")
     public ResponseEntity<List<UserDTO>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         Page<UserDTO> users = this.userService.getAllUsers(page, size);
         return ResponseEntity.ok(users.getContent());
     }
 
     @Operation(summary = "Delete user by ID", description = "Remove a user from the system by their unique ID.")
-    @DeleteMapping("/user/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable String id) {
         this.userService.deleteUser(id);
         return ResponseEntity.ok().build();

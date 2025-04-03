@@ -23,7 +23,7 @@ public class MongoAuthUserDetailService implements UserDetailsService {
         if (user.isEmpty()) {
             throw new UsernameNotFoundException(email);
         }
-        return new User(user.get().getUsername(), user.get().getPassword(), user.get().getRoleEnum());
+        return user.get();
     }
 
 }
