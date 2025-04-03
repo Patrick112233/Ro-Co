@@ -1,0 +1,54 @@
+
+services:
+
+  #frontend:
+  #  build: ./env/Dockerfile_REST
+  #  ports:
+  #    - "8080:8080"
+  #  volumes:
+  #    - ./target:.
+  #  command: [ "java","-jar","/app.jar" ]
+  #  links:
+  #    - rest_api
+  #  depends_on:
+  #    - rest_api
+
+  #rest_api:
+  #  image: openjdk:24-jdk
+  #  ports:
+  #    - "8081:8081"
+  #  volumes:
+  #    - ./target:.
+  #  #command: ["java","-jar","/app.jar"]
+  #  links:
+  #    - mongo
+  #     - frontend
+  #  depends_on:
+  #    - mongo
+
+  mongo:
+    image: mongo:6.0.21
+    restart: always
+    ports:
+      - "27017:27017"
+    #environment:
+      #MONGO_INITDB_ROOT_USERNAME: backend
+      #MONGO_INITDB_ROOT_PASSWORD: fnwMSjCDyc
+      #MONGO_INITDB_DATABASE: RoCoDB
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - db-data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8082:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://admin:root@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+
+volumes:
+  db-data:
