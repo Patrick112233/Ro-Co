@@ -43,4 +43,4 @@ To generate secure keys:
 By following these steps and securely handling sensitive data, you'll be able to configure the application effectively.
 
 ## API Documentation
-Die API Endpunkte sind dokumentirt unter folgendem Link: [https://localhost/api.html](https://localhost/api.html).
+Die API Endpunkte sind dokumentiert unter folgendem Link: [https://localhost/api.html](https://localhost/api.html).
