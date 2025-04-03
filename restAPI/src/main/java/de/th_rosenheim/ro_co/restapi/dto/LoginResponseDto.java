@@ -1,18 +1,18 @@
 package de.th_rosenheim.ro_co.restapi.dto;
 
-public class LoginResponse extends UserDTO{
+public class LoginResponseDto extends OutUserDto {
     private String token;
     private long expiresIn;
 
-    public LoginResponse() {
+    public LoginResponseDto() {
         // Default constructor for deserialization
     }
-    public LoginResponse(String token, long expiresIn) {
+    public LoginResponseDto(String token, long expiresIn) {
         this.token = token;
         this.expiresIn = expiresIn;
     }
 
-    public LoginResponse(UserDTO user){
+    public LoginResponseDto(OutUserDto user){
         super(user.getId(), user.getFirstName(), user.getLastName(), user.getRole(), user.getEmail(), user.isVerified());
     }
 
@@ -20,14 +20,14 @@ public class LoginResponse extends UserDTO{
     public String getToken() {
         return token;
     }
-    public LoginResponse setToken(String token) {
+    public LoginResponseDto setToken(String token) {
         this.token = token;
         return this;
     }
     public long getExpiresIn() {
         return expiresIn;
     }
-    public LoginResponse setExpiresIn(long expiresIn) {
+    public LoginResponseDto setExpiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
         return this;
     }

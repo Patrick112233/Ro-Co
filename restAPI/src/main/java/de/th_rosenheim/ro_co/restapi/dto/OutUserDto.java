@@ -2,7 +2,7 @@ package de.th_rosenheim.ro_co.restapi.dto;
 
 import jakarta.validation.constraints.NotNull;
 
-public class UserDTO {
+public class OutUserDto {
     private String id;
     private String firstName;
     private String lastName;
@@ -12,7 +12,7 @@ public class UserDTO {
     private boolean verified;
 
 
-    public UserDTO(String id, String firstName, String lastName, String role, String email, boolean verified) {
+    public OutUserDto(String id, String firstName, String lastName, String role, String email, boolean verified) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -25,7 +25,7 @@ public class UserDTO {
      * Default constructor for UserDTO.
      * This constructor is used by the Mapping framework to create instances of UserDTO.
      */
-    public UserDTO() {}
+    public OutUserDto() {}
 
 
     public String getId() {

@@ -7,7 +7,10 @@
 
 package de.th_rosenheim.ro_co.restapi.security;
 
-import org.apache.commons.lang3.NotImplementedException;
+import de.th_rosenheim.ro_co.restapi.model.User;
+import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -16,16 +19,18 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Service
 public class JwtService {
+
+    public static final String BEARER_STRING = "Bearer ";
+
+
+    Logger logger = LoggerFactory.getLogger(JwtService.class);
 
     private static final SignatureAlgorithm SIG_ALG = Jwts.SIG.ES512; //or ES256 or ES384
 
@@ -37,6 +42,12 @@ public class JwtService {
 
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
+
+    private final UserRepository userRepository;
+
+    public JwtService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
 
     /**
@@ -58,6 +69,24 @@ public class JwtService {
      */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    /**
+     * Extracts the token from the bearer string.
+     * @param token
+     * @return
+     */
+    public String extractToken(String bearer) {
+        return bearer.substring(BEARER_STRING.length());
+    }
+
+    /**
+     * Checks if the token contains the bearer string.
+     * @param bearer
+     * @return
+     */
+    public boolean isBearer(String bearer) {
+        return bearer.startsWith(BEARER_STRING);
     }
 
 
@@ -89,7 +118,8 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        Optional<User> user = userRepository.findByEmail(username);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isPresent() && user.get().isVerified();
     }
 
     /**
@@ -139,8 +169,8 @@ public class JwtService {
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
             return keyFactory.generatePrivate(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
-                //@TODO impl Logging
-                throw new NotImplementedException("Not implemented yet", e);
+            logger.error(e.getMessage());
+            throw new RuntimeException("Failed to get private key", e);
         }
     }
 
@@ -152,8 +182,8 @@ public class JwtService {
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
             return keyFactory.generatePublic(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
-            //@TODO impl Logging
-            throw new NotImplementedException("Not implemented yet", e);
+            logger.error(e.getMessage());
+            throw new RuntimeException("Failed to get public key", e);
         }
     }
 }

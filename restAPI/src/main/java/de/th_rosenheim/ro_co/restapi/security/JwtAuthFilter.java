@@ -28,7 +28,6 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    public static final String BEARER_STRING = "Bearer ";
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final HandlerExceptionResolver handlerExceptionResolver;
@@ -50,14 +49,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
 
         //check if header is present
-        if (authHeader == null || !authHeader.startsWith(BEARER_STRING) ){
+        if (authHeader == null || !jwtService.isBearer(authHeader)) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             //extract auth information from token
-            final String authBearer = authHeader.substring(BEARER_STRING.length());
+            final String authBearer = this.jwtService.extractToken(authHeader);
+
             final String userEmail = this.jwtService.extractUsername(authBearer);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
