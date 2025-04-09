@@ -1,15 +1,17 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom';
-import LoginSignupForm from "./components/LoginSignupForm.jsx";
-import Dashboard from './components/Dashboard.jsx';
+import SignupForm from "./page/SignupForm.jsx";
+import Dashboard from './page/Dashboard.jsx';
 
 
 const App = () => {
     return (
         <>
             <Routes>
-                <Route path="/" element={<LoginSignupForm />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/signup" element={<SignupForm />} />
+                <Route path="/" element={<SignupForm />} />
+                <Route path="*" element={<SignupForm />} />
             </Routes>
         </>
     )
