@@ -14,7 +14,6 @@ import java.util.*;
 @Document(collection="User")
 public class User implements UserDetails {
 
-
     //define internal role enum(sTring)
 
     public enum Role {
@@ -55,8 +54,7 @@ public class User implements UserDetails {
 
     private String password; //should be always encrypted!
 
-    private String firstName;
-    private String lastName;
+    private String displayName;
     private boolean verified = false; //default is false, set to true after email verification
     private String role;
 
@@ -74,23 +72,6 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    // Getter und Setter für firstName
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    // Getter und Setter für lastName
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
 
 
     public String getEmail() {
@@ -118,6 +99,10 @@ public class User implements UserDetails {
         return password;
     }
 
+    /**
+     * Returns the email of the user as the username. Not the display name.
+     * @return
+     */
     @Override
     public String getUsername() {
         return this.getEmail();
@@ -128,12 +113,11 @@ public class User implements UserDetails {
     }
 
     // AllArgsConstructor
-    public User(String id, String firstName, String lastName, String email, String password, boolean verrified, String role) {
+    public User(String id, String email, String password, String displayName, boolean verrified, String role) {
         this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
         this.email = email;
         this.password = password;
+        this.displayName = displayName;
         this.verified = verrified;
         this.role = role;
     }
@@ -148,15 +132,6 @@ public class User implements UserDetails {
 
     // NoArgsConstructor
     public User() {
-    }
-
-    @Override
-    public String toString() {
-        return "User[" +
-                "id='" + id + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ']';
     }
 
 
@@ -196,5 +171,13 @@ public class User implements UserDetails {
             throw new IllegalArgumentException("Role cannot be null");
         }
         this.role = role.getRole();
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

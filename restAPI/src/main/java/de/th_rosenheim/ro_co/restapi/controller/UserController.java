@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-@RequestMapping("/user")
+@RequestMapping("api/v1/user")
 @RestController
 public class UserController {
 

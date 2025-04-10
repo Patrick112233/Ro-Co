@@ -2,12 +2,10 @@ package de.th_rosenheim.ro_co.restapi.dto;
 
 
 public class InUserDto {
-    private String firstName;
-    private String lastName;
+    private String username;
 
-    public InUserDto(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public InUserDto(String firstName) {
+        this.username = firstName;
     }
 
     /**
@@ -16,21 +14,12 @@ public class InUserDto {
      */
     public InUserDto() {}
 
-
-    public String getFirstName() {
-        return firstName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
 

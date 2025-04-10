@@ -13,7 +13,7 @@ public class LoginResponseDto extends OutUserDto {
     }
 
     public LoginResponseDto(OutUserDto user){
-        super(user.getId(), user.getFirstName(), user.getLastName(), user.getRole(), user.getEmail(), user.isVerified());
+        super(user.getId(), user.getUsername(), user.getRole(), user.getEmail(), user.isVerified());
     }
 
 

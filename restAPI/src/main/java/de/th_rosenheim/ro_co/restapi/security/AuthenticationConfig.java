@@ -26,7 +26,7 @@ public class AuthenticationConfig {
     }
 
     private static final String[] WHITE_LIST_AUTH = {
-            "/auth/**",
+            "api/v1/auth/**",
             "/v3/api-docs/**",
             "/swagger-resources",
             "/swagger-resources/**",

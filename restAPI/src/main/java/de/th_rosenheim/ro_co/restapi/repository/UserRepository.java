@@ -14,6 +14,6 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     void deleteById(@NotNull String id);
 
-    public long count();
-
+    @Query("{displayName: ?0}")
+    Long countByDisplayName(String displayName);
 }

@@ -15,12 +15,14 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Optional;
 
-@RequestMapping("/auth")
+//@CrossOrigin
+@RequestMapping("api/v1/auth")
 @RestController
 public class AuthenticationController {
 
@@ -38,11 +40,31 @@ public class AuthenticationController {
         if (responseDTO.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+
         URI uri = UriComponentsBuilder
-                .fromPath("/user/{id}")
+                .fromPath("/api/v1/login")
                 .buildAndExpand(responseDTO.get().getId())
                 .toUri();
         return ResponseEntity.created(uri).body(responseDTO.get());
+    }
+
+    /**
+     * Chck availability of username
+     * @param username
+     * @return
+     */
+    @Operation(summary = "Check username availability", description = "Check if a username is already taken. Returns 200 if available, 409 if taken, and 400 for invalid input.")
+    @GetMapping(value = "/signup/username")
+    public ResponseEntity checkUserName(@RequestParam String username) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        authenticationService.isDisplayNameAvailable(username);
+        if (authenticationService.isDisplayNameAvailable(username)) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(409).build();
+        }
     }
 
 
@@ -84,5 +106,10 @@ public class AuthenticationController {
         return ResponseEntity.badRequest().body(error);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorDTO error = new ErrorDTO("The request body is not readable or is missing required fields or invalid inputs.");
+        return ResponseEntity.badRequest().body(error);
+    }
 
 }

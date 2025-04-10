@@ -9,8 +9,8 @@ import AuthContext from '../context/AuthProvider.jsx';
 import axios from '../api/axios.js'
 import * as https from "node:https";
 
-const LOGIN_URL = '/auth/login';
-const SIGNUP_URL = '/auth/signup';
+const LOGIN_URL = 'auth/login';
+const SIGNUP_URL = 'auth/signup';
 
 const EMAIL_REGEX = /^((?!\.)[\w\-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
@@ -23,8 +23,8 @@ const SignupForm = () => {
   const errRef = useRef();
   const [isSignUp, setIsSignUp] = useState(false);
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [userName, setUserName] = useState('');
+  const [availabledUser, setAvailabledUser] = useState(false);
 
   const [mail, setMail] = useState('');
   const [validMail, setValidMale] = useState(false);
@@ -45,6 +45,49 @@ const SignupForm = () => {
   useEffect(() => {
     userRef.current.focus();
   }, [])
+
+  //check username
+useEffect(() => {
+  let cooldownTimer = null;
+
+  const checkUsernameAvailability = async () => {
+
+    if (userName.length < 3) {
+        setAvailabledUser(false);
+        return;
+    }
+
+    //request username availability on server
+    try {
+      const { status } = await axios.get('/auth/signup/username', {
+        params: { username: userName },
+      });
+
+      if (status === 200) {
+        setAvailabledUser(true);
+      }
+    } catch ({ response }) {
+      if (response?.status === 409) {
+        setAvailabledUser(false);
+      } else {
+        console.error('An unexpected error occurred:', response?.statusText || 'Unknown error');
+      }
+    }
+  };
+
+  if (userName) {
+
+    cooldownTimer = setTimeout(() => {
+      checkUsernameAvailability();
+    }, 2000); // 2000ms cooldown
+  }
+
+  return () => {
+    if (cooldownTimer) {
+      clearTimeout(cooldownTimer);
+    }
+  };
+}, [userName]);
 
   //email filed changed hook
   useEffect(() => {
@@ -73,32 +116,16 @@ const SignupForm = () => {
     }
     try {
 
-      //let body
-      //if (isSignUp){
-      let body = JSON.stringify({
-          "firstName": firstName,
-          "lastName": lastName,
-          "email": mail,
-          "password": pwd
-        });
-      /*}else {
-        body = JSON.stringify({
-          "email": mail,
-          "password": pwd
-        });
-      }*/
-
       const response = await axios.post(
           isSignUp?SIGNUP_URL:LOGIN_URL,
-          body,
           {
-            method: 'post',
-            maxBodyLength: Infinity,
-            headers: { 'Content-Type': 'application/json' },
-            withCredentials: true,
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false
-            })
+            userName: userName,
+            email: mail,
+            password: pwd
+          },
+          {
+            headers: { 'Content-Type': 'application/json' }
+//            withCredentials: true
           }
           );
 
@@ -146,32 +173,27 @@ const SignupForm = () => {
                 <Form onSubmit={handleSubmit}>
                   {isSignUp && (
                     <>
-                      <label htmlFor="first_name" className="form-label">
-                        First Name:
+                      <label htmlFor="user_name" className="form-label">
+                        Username:
                       </label>
                       <input
                         type="text"
-                        id="first_name"
-                        onChange={(e) => setFirstName(e.target.value)}
-                        value={firstName}
+                        id="user_name"
+                        onChange={(e) => setUserName(e.target.value)}
+                        value={userName}
                         required
                         className="form-control"
-                        placeholder="Enter your first name"
+                        placeholder="Enter your user name"
                       />
-                      <label htmlFor="last_name" className="form-label">
-                        Last Name:
-                      </label>
-                      <input
-                        type="text"
-                        id="last_name"
-                        onChange={(e) => setLastName(e.target.value)}
-                        value={lastName}
-                        required
-                        className="form-control"
-                        placeholder="Enter your last name"
-                      />
+                      <span className={availabledUser ? "text-success position-relative" : "d-none"} style={{ top: '-30px', right: '-275px' }}>
+                        <FontAwesomeIcon icon={faCheck} />
+                      </span>
+                      <span className={availabledUser ? "d-none" : "text-danger position-relative"} style={{ top: '-30px', right: '-275px' }}>
+                        <FontAwesomeIcon icon={faTimes} />
+                      </span>
                     </>
                   )}
+
 
                   <label htmlFor="email" className="form-label">
                     E-Mail:
@@ -196,7 +218,6 @@ const SignupForm = () => {
                   </span>
                   <span className={validMail || !mail ? "d-none" : "text-danger position-relative"} style={{ top: '-30px', right: '-275px' }}>
                     <FontAwesomeIcon icon={faTimes} />
-
                   </span>
                   <label htmlFor="password" className="form-label">Password:
                   </label>

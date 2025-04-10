@@ -8,6 +8,8 @@ import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import de.th_rosenheim.ro_co.restapi.security.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -36,6 +38,7 @@ public class AuthenticationService {
 
     public Optional<LoginResponseDto> signup(RegisterUserDto input) throws NonUniqueException {
         LoginResponseDto response = UserMapper.INSTANCE.registerUserDtoToLoginResponse(input);
+
         response.setRole(User.Role.USER.getRole());
         response.setVerified(true); // this filed is intendet for an Mail verification process that is not implemented yet
         User user = UserMapper.INSTANCE.outUserDTOtoUser(response);
@@ -89,5 +92,13 @@ public class AuthenticationService {
         response.setToken(jwtToken);
         response.setExpiresIn(jwtService.getExpirationTime());
         return Optional.of(response);
+    }
+
+    public boolean isDisplayNameAvailable(String displayName) {
+        if (displayName == null || displayName.isEmpty()) {
+            throw new NonUniqueException("Username is required");
+        }
+        Long count = userRepository.countByDisplayName(displayName);
+        return count == null || count > 0;
     }
 }
