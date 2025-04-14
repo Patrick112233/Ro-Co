@@ -1,13 +1,13 @@
-import React, {useEffect, useRef, useState, useContext} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import {faCheck, faTimes, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import '../bootstrap.min.css';
 import logo from '../assets/ROLIP_Logo.jpg'
-import {data, useNavigate} from 'react-router-dom';
-import AuthContext from '../context/AuthProvider.jsx';
 import axios from '../api/axios.js'
-import * as https from "node:https";
+import useAuth from '../auth/useAuth';
+import { useNavigate, useLocation } from 'react-router-dom';
+
 
 const LOGIN_URL = 'auth/login';
 const SIGNUP_URL = 'auth/signup';
@@ -17,10 +17,12 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 
 const SignupForm = () => {
-  const {setAuth} = useContext(AuthContext);
+  const { setAuth } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/dashboard";
+
   const userRef = useRef();
-  const errRef = useRef();
   const [isSignUp, setIsSignUp] = useState(false);
 
   const [userName, setUserName] = useState('');
@@ -28,7 +30,6 @@ const SignupForm = () => {
 
   const [mail, setMail] = useState('');
   const [validMail, setValidMale] = useState(false);
-  const [mailFocus, setMailFocus] = useState(false);
 
   const [pwd, setPwd] = useState('');
   const [validPwd, setValidPwd] = useState(false);
@@ -39,7 +40,6 @@ const SignupForm = () => {
   const [matchFocus, setMatchFocus] = useState(false);
 
   const [errMsg, setErrMsg] = useState('');
-  const [success, setSuccess] = useState(false);
 
   //page load hock
   useEffect(() => {
@@ -51,12 +51,10 @@ useEffect(() => {
   let cooldownTimer = null;
 
   const checkUsernameAvailability = async () => {
-
     if (userName.length < 3) {
         setAvailabledUser(false);
         return;
     }
-
     //request username availability on server
     try {
       const { status } = await axios.get('/auth/signup/username', {
@@ -70,13 +68,13 @@ useEffect(() => {
       if (response?.status === 409) {
         setAvailabledUser(false);
       } else {
+        setErrMsg('Server error, please try again later');
         console.error('An unexpected error occurred:', response?.statusText || 'Unknown error');
       }
     }
   };
 
   if (userName) {
-
     cooldownTimer = setTimeout(() => {
       checkUsernameAvailability();
     }, 2000); // 2000ms cooldown
@@ -115,33 +113,44 @@ useEffect(() => {
       return;
     }
     try {
-
-      const response = await axios.post(
-          isSignUp?SIGNUP_URL:LOGIN_URL,
-          {
-            userName: userName,
-            email: mail,
-            password: pwd
-          },
-          {
-            headers: { 'Content-Type': 'application/json' }
-//            withCredentials: true
-          }
-          );
+      let response = null;
+      if (isSignUp) {
+        response = await axios.post(
+            SIGNUP_URL,
+            {
+              username: userName,
+              email: mail,
+              password: pwd
+            },
+            {
+              headers: {'Content-Type': 'application/json'},
+              withCredentials: true
+            }
+        );
+      }else {
+        response = await axios.post(
+            LOGIN_URL,
+            {
+              email: mail,
+              password: pwd
+            },
+            {
+              headers: {'Content-Type': 'application/json'},
+              withCredentials: true
+            }
+        );
+      }
 
       const accessToken = response?.data?.token;
-      const authMail = response?.data?.token;
-      setAuth({authMail, accessToken});
+      const authMail = response?.data?.email;
+      const expiresIn = response?.data?.expiresIn;
+      const role = response?.data?.role;
+      setAuth({authMail, accessToken, expiresIn, role});
 
-      console.log(response?.data);
-      console.log(response?.accessToken);
-      console.log(JSON.stringify(response))
-      setSuccess(true);
-      //clear state and controlled inputs
-      //need value attrib on inputs for this
       setMail('');
       setPwd('');
       setMatchPwd('');
+      navigate(from, { replace: true }); //links back from where you come from!
 
     } catch (err) {
       if (!err?.response) {
@@ -149,7 +158,11 @@ useEffect(() => {
       } else if (err.response?.status === 409) {
         setErrMsg('E-Mail is already claimed');
       } else {
-        setErrMsg('Registration Failed')
+        if(err?.response?.data?.errorMessage){
+            setErrMsg(err?.response?.data?.errorMessage);
+        }else {
+          setErrMsg('Registration railed for unknowen reason')
+        }
       }
       //errRef.current.focus();
     }
@@ -161,10 +174,6 @@ useEffect(() => {
   }
 
   return (
-      <>
-        {success ? (
-            navigate('/dashboard')
-        ) : (
         <Container className="d-flex align-items-center justify-content-center vh-100">
           <Row className="justify-content-md-center border rounded bg-primary p-4 text-white">
             <Col className="align-items-center" style={{width: '300px'}}>
@@ -188,7 +197,7 @@ useEffect(() => {
                       <span className={availabledUser ? "text-success position-relative" : "d-none"} style={{ top: '-30px', right: '-275px' }}>
                         <FontAwesomeIcon icon={faCheck} />
                       </span>
-                      <span className={availabledUser ? "d-none" : "text-danger position-relative"} style={{ top: '-30px', right: '-275px' }}>
+                      <span className={availabledUser || userName.length <= 3  ? "d-none" : "text-danger position-relative"} style={{ top: '-30px', right: '-275px' }}>
                         <FontAwesomeIcon icon={faTimes} />
                       </span>
                     </>
@@ -208,8 +217,6 @@ useEffect(() => {
                       required
                       aria-invalid={validMail ? "false" : "true"}
                       aria-describedby="uidnote"
-                      onFocus={() => setMailFocus(true)}
-                      onBlur={() => setMailFocus(false)}
                       placeholder="Enter your email"
                       className="form-control d-inline-flex"
                   />
@@ -269,9 +276,6 @@ useEffect(() => {
             </Col>
           </Row>
         </Container>
-        )};
-      </>
-
   );
 };
 

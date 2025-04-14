@@ -4,14 +4,14 @@ import { BrowserRouter } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App.jsx'
-import { AuthProvider } from './context/AuthProvider.jsx';
+import { AuthProvider } from './auth/AuthProvider.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-        <AuthProvider>
-          <BrowserRouter>
+      <BrowserRouter>
+      <AuthProvider>
               <App />
-          </BrowserRouter>
         </AuthProvider>
+      </BrowserRouter>
   </StrictMode>,
 )
