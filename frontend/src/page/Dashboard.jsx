@@ -1,57 +1,130 @@
 import React from 'react';
-import { Container, Row, Col, Card, ListGroup, Image } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faBell, faPlus, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Event from './../component/event.jsx';
+
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 
 const Dashboard = () => {
   const events = [
-    { date: '2023-12-01', participants: 10, description: 'Event 1' },
-    { date: '2023-12-05', participants: 20, description: 'Event 2' },
-    { date: '2023-12-10', participants: 15, description: 'Event 3' },
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:1},
+      {id:2}
   ];
 
-  const questions = [
-    { user: 'User1', profilePic: 'path/to/profile1.jpg', headline: 'Question 1', body: 'This is the first question.' },
-    { user: 'User2', profilePic: 'path/to/profile2.jpg', headline: 'Question 2', body: 'This is the second question.' },
-    { user: 'User3', profilePic: 'path/to/profile3.jpg', headline: 'Question 3', body: 'This is the third question.' },
-  ];
+  const getSlidesToShow = (num) => {
+      return Math.min(num, events.length)
+  };
+
+
+
+
+  const sliderSettings = {
+      dots: false,
+      infinite: true,
+      speed: 500,
+      slidesToShow: getSlidesToShow(5),
+      slidesToScroll: 1,
+      autoplay: true,
+      autoplaySpeed: 5000,
+      cssEase: "linear",
+      centerMode: true,
+      arrows: true,
+      responsive: [
+          {
+              breakpoint: 1850, // or less
+              settings: {
+                  slidesToShow: getSlidesToShow(4),
+                  slidesToScroll: 1,
+              },
+          },
+          {
+              breakpoint: 1500, // or less
+              settings: {
+                  slidesToShow: getSlidesToShow(3),
+                  slidesToScroll: 1,
+              },
+          },
+            {
+                breakpoint: 1150, // or less
+                settings: {
+                    slidesToShow: getSlidesToShow(2),
+                    slidesToScroll: 1,
+                },
+            },
+            {
+                breakpoint: 800,  // or less
+                settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                    centerMode: false,
+                    arrows: false,
+                },
+            },
+
+      ]
+  }
 
   return (
-    <Container fluid>
-      <Row className="mt-4">
-        <Col md={3}>
-          <h4>Upcoming Events</h4>
-          <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
-            {events.map((event, index) => (
-              <Card key={index} className="d-inline-block mr-2" style={{ width: '200px' }}>
-                <Card.Body>
-                  <Card.Title>{event.date}</Card.Title>
-                  <Card.Text>Participants: {event.participants}</Card.Text>
-                  <Card.Text>{event.description}</Card.Text>
-                </Card.Body>
-              </Card>
-            ))}
-          </div>
-        </Col>
-        <Col md={9}>
-          <h4>Questions</h4>
-          <ListGroup>
-            {questions.map((question, index) => (
-              <ListGroup.Item key={index} className="mb-3">
-                <Row>
-                  <Col md={2}>
-                    <Image src={question.profilePic} roundedCircle fluid />
-                  </Col>
-                  <Col md={10}>
-                    <h5>{question.headline}</h5>
-                    <p>{question.body}</p>
-                  </Col>
-                </Row>
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
-        </Col>
-      </Row>
-    </Container>
-  );
-};
+      <>
+          <nav className="navbar navbar-light bg-primary justify-content-between w-100">
+              <div className="d-flex justify-content-start btn-group ms-2">
+                  <button className="rounded-circle btn btn-light" type="button">
+                      <FontAwesomeIcon icon={faUser} className="text-dark"/>
+                  </button>
+                  <a className="navbar-brand text-white fw-bold ms-2">User Name </a>
+              </div>
 
-export default Dashboard;
+              <div className="d-flex justify-content-end btn-group">
+                  <button className="btn me-2" type="button">
+                      <FontAwesomeIcon icon={faBell} className="text-dark fs-4"/>
+                  </button>
+              </div>
+          </nav>
+
+          <div className="dropstart position-absolute bottom-0 end-0" style={{marginRight: '3VW', marginBottom: '3VW'}}>
+              <button type="button" className="rounded-circle btn btn-primary" id="dropdownMenuButton"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                  <FontAwesomeIcon icon={faPlus} className="text-white p-2 fs-4"/>
+              </button>
+              <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <li><a className="dropdown-item" href="#">Ask Question</a></li>
+                  <li><a className="dropdown-item" href="#">Create Event</a></li>
+              </ul>
+          </div>
+
+            <div className="m-auto justify-content-center" style={{width: '90vw'}}>
+                <div className="mt-5">
+                    <Slider {...sliderSettings}>
+                        {
+                            events.map((event, index) => (
+                                <Event key={index} eventID={event.id}/>
+                            ))
+                        }
+                    </Slider>
+                </div>
+            </div>
+
+              <hr className="mx-5 my-3"/>
+
+
+              </>
+              );
+          };
+
+          export default Dashboard;

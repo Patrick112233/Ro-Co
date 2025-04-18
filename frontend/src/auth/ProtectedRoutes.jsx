@@ -10,8 +10,7 @@ const ProtectedRoutes = () => {
         allowAccess = false;
     } else {
         const decodedToken = jwtDecode(auth.accessToken);
-        const currentDate = new Date();
-        allowAccess = decodedToken.exp * 1000 > currentDate.getTime();
+        allowAccess = Date.now() < decodedToken.exp  * 1000
     }
 
     if (allowAccess) {

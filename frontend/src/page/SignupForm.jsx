@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+
 import {faCheck, faTimes, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import '../bootstrap.min.css';
 import logo from '../assets/ROLIP_Logo.jpg'
 import axios from '../api/axios.js'
 import useAuth from '../auth/useAuth';
@@ -20,7 +20,7 @@ const SignupForm = () => {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
+  const from = location.state?.from?.pathname || "/";
 
   const userRef = useRef();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -77,7 +77,7 @@ useEffect(() => {
   if (userName) {
     cooldownTimer = setTimeout(() => {
       checkUsernameAvailability();
-    }, 2000); // 2000ms cooldown
+    }, 1000); // 1000ms cooldown
   }
 
   return () => {
@@ -127,19 +127,20 @@ useEffect(() => {
               withCredentials: true
             }
         );
-      }else {
-        response = await axios.post(
-            LOGIN_URL,
-            {
-              email: mail,
-              password: pwd
-            },
-            {
-              headers: {'Content-Type': 'application/json'},
-              withCredentials: true
-            }
-        );
       }
+
+      // login even necesery after signup to get the access token!
+      response = await axios.post(
+          LOGIN_URL,
+          {
+            email: mail,
+            password: pwd
+          },
+          {
+            headers: {'Content-Type': 'application/json'},
+            withCredentials: true
+          });
+
 
       const accessToken = response?.data?.token;
       const authMail = response?.data?.email;
