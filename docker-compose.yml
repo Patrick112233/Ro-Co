@@ -32,7 +32,7 @@ services:
     ports:
       - "27017:27017"
     env_file:
-      - env/config.env
+      - env/config_own.env
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - db-data:/data/db
@@ -43,7 +43,7 @@ services:
     ports:
       - 8082:8081
     env_file:
-      - env/config.env
+      - env/config_own.env
 
 volumes:
   db-data:

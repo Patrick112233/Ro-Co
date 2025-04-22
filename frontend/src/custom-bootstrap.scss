@@ -11,17 +11,17 @@ $gray-700: #495057;
 $gray-800: #343a40;
 $gray-900: #212529;
 $black: #000;
-$blue: #f39100;
+$blue: #2648BFFF;
 $indigo: #6610f2;
 $purple: #6f42c1;
 $pink: #e83e8c;
 $red: #d9534f;
-$orange: #f0ad4e;
+$orange: #f39100;
 $yellow: #f0ad4e;
 $green: #5cb85c;
 $teal: #20c997;
 $cyan: #5bc0de;
-$primary: $blue;
+$primary: $orange;
 $secondary: $gray-200;
 $success: $green;
 $info: $cyan;
@@ -35,6 +35,14 @@ $dropdown-link-hover-color: $dropdown-link-color;
 $dropdown-link-hover-bg: $gray-100;
 $navbar-dark-color: rgba($white,.75);
 $navbar-dark-hover-color: $white;
+$secondary-bg: $body-color;
+
+
+@import '../node_modules/bootstrap/scss/bootstrap.scss';
+
+.body{
+    margin-bottom: 70px !important;
+}
 
 .slick-slide > div {
     margin: 0px;
@@ -48,6 +56,4 @@ $navbar-dark-hover-color: $white;
     color:$primary !important;
 }
 
-@import '../node_modules/bootstrap/scss/bootstrap.scss';
 
-//@import '../node_modules/bootstrap/dist/css/bootstrap.css';
