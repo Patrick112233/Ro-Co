@@ -26,7 +26,7 @@ const SignupForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
 
   const [userName, setUserName] = useState('');
-  const [availabledUser, setAvailabledUser] = useState(false);
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
 
   const [mail, setMail] = useState('');
   const [validMail, setValidMale] = useState(false);
@@ -52,7 +52,7 @@ useEffect(() => {
 
   const checkUsernameAvailability = async () => {
     if (userName.length < 3) {
-        setAvailabledUser(false);
+        setIsUsernameAvailable(false);
         return;
     }
     //request username availability on server
@@ -62,11 +62,11 @@ useEffect(() => {
       });
 
       if (status === 200) {
-        setAvailabledUser(true);
+        setIsUsernameAvailable(true);
       }
     } catch ({ response }) {
       if (response?.status === 409) {
-        setAvailabledUser(false);
+        setIsUsernameAvailable(false);
       } else {
         setErrMsg('Server error, please try again later');
         console.error('An unexpected error occurred:', response?.statusText || 'Unknown error');
@@ -182,32 +182,36 @@ useEffect(() => {
                 <h2>{isSignUp ? 'Signup' : 'Login'}</h2>
                 <Form onSubmit={handleSubmit}>
                   {isSignUp && (
-                    <>
-                      <label htmlFor="user_name" className="form-label">
-                        Username:
-                      </label>
-                      <input
-                        type="text"
-                        id="user_name"
-                        onChange={(e) => setUserName(e.target.value)}
-                        value={userName}
-                        required
-                        className="form-control"
-                        placeholder="Enter your user name"
-                      />
-                      <span className={availabledUser ? "text-success position-relative" : "d-none"} style={{ top: '-30px', right: '-275px' }}>
-                        <FontAwesomeIcon icon={faCheck} />
-                      </span>
-                      <span className={availabledUser || userName.length <= 3  ? "d-none" : "text-danger position-relative"} style={{ top: '-30px', right: '-275px' }}>
-                        <FontAwesomeIcon icon={faTimes} />
-                      </span>
-                    </>
+                      <>
+                        <label htmlFor="user_name" className="form-label">
+                          Username:
+                        </label>
+                        <div className="input-group has-validation d-block">
+                          <input
+                              type="text"
+                              id="user_name"
+                              onChange={(e) => setUserName(e.target.value)}
+                              className={userName.length <= 3 ? "form-control w-100" : (isUsernameAvailable ? "form-control is-valid w-100" : "form-control is-invalid w-100")}
+                              placeholder="Enter your user name"
+                              value={userName}
+                              required
+                          />
+
+                          {!isUsernameAvailable && userName.length > 3 && (
+                              <div className="text-danger">
+                                Username is already taken!
+                              </div>
+                          )}
+                        </div>
+                      </>
                   )}
 
 
                   <label htmlFor="email" className="form-label">
                     E-Mail:
                   </label>
+                  <div className="input-group has-validation">
+                    <span className="input-group-text" id="inputGroupPrepend3">@</span>
                   <input
                       type="text"
                       id="email"
@@ -219,48 +223,60 @@ useEffect(() => {
                       aria-invalid={validMail ? "false" : "true"}
                       aria-describedby="uidnote"
                       placeholder="Enter your email"
-                      className="form-control d-inline-flex"
+                      className={mail.length <= 0 ?  "form-control d-inline-flex": validMail ? "form-control d-inline-flex is-valid" : "form-control d-inline-flex is-invalid"}
+
                   />
-                  <span className={validMail ? "text-success position-relative" : "d-none"} style={{ top: '-30px', right: '-275px' }}>
-                    <FontAwesomeIcon icon={faCheck} />
-                  </span>
-                  <span className={validMail || !mail ? "d-none" : "text-danger position-relative"} style={{ top: '-30px', right: '-275px' }}>
-                    <FontAwesomeIcon icon={faTimes} />
-                  </span>
+                  </div>
+
+
                   <label htmlFor="password" className="form-label">Password:
                   </label>
-                  <input type="password" id="password" onChange={(e) => setPwd(e.target.value)} value={pwd} required aria-invalid={validPwd ? "false" : "true"} aria-describedby="pwdnote" onFocus={() => setPwdFocus(true)} onBlur={() => setPwdFocus(false)} placeholder="Enter your Password" className="form-control"
-                  />
+                  <input
+                      type="password"
+                      id="password"
+                      onChange={(e) => setPwd(e.target.value)}
+                      value={pwd}
+                      required
+                      aria-invalid={validPwd ? "false" : "true"}
+                      aria-describedby="pwdnote"
+                      onFocus={() => setPwdFocus(true)} onBlur={() => setPwdFocus(false)}
+                      placeholder="Enter your Password"
+                      className={!isSignUp || pwd.length <= 0 ? "form-control" : (validPwd ? "form-control is-valid" : "form-control is-invalid")}
+                          />
+                  { !validPwd && pwd.length > 0 && isSignUp && (
+                      <div className="text-danger">
+                          Must uses 8 to 24 characters.
+                          Must include uppercase and lowercase letters, a number and a special character.<br />
+                          Allowed special characters: <span aria-label="exclamation mark">!</span> <span aria-label="at symbol">@</span> <span aria-label="hashtag">#</span> <span aria-label="dollar sign">$</span> <span aria-label="percent">%</span>
+                      </div>
+                  )}
+
 
                   {isSignUp && (
                       <>
-                        <p id="pwdnote" className={pwdFocus && !validPwd ? "text-danger" : "d-none"}>
-                          <FontAwesomeIcon icon={faInfoCircle}/> 8 to 24 characters.<br />
-                          Must include uppercase and lowercase letters, a number and a special character.<br />
-                          Allowed special characters: <span aria-label="exclamation mark">!</span> <span aria-label="at symbol">@</span> <span aria-label="hashtag">#</span> <span aria-label="dollar sign">$</span> <span aria-label="percent">%</span>
-                        </p>
-                        <label htmlFor="confirm_pwd" className="form-label">
-                          Confirm Password:
-                        </label>
-                        <input
-                            type="password"
-                            id="confirm_pwd"
-                            onChange={(e) => setMatchPwd(e.target.value)}
-                            value={matchPwd}
-                            required
-                            aria-invalid={validMatch ? "false" : "true"}
-                            aria-describedby="confirmnote"
-                            onFocus={() => setMatchFocus(true)}
-                            onBlur={() => setMatchFocus(false)}
-                            className="form-control"
-                            placeholder={"Confirm your Password"}
-                        />
-                        <p id="confirmnote" className={matchFocus && !validMatch ? "text-danger" : "d-none"}>
-                          <FontAwesomeIcon icon={faInfoCircle}/> Must match the first password input field.
-                        </p>
-                      </>
+                          <label htmlFor="confirm_pwd" className="form-label">
+                            Confirm Password:
+                          </label>
+                          <input
+                              type="password"
+                              id="confirm_pwd"
+                              onChange={(e) => setMatchPwd(e.target.value)}
+                              value={matchPwd}
+                              required
+                              aria-invalid={validMatch ? "false" : "true"}
+                              aria-describedby="confirmnote"
+                              onFocus={() => setMatchFocus(true)}
+                              onBlur={() => setMatchFocus(false)}
+                              className={validMatch ? "form-control is-valid" : "form-control is-invalid"}
+                              placeholder={"Confirm your Password"}
+                          />
+                          {!validMatch &&(
+                              <div className="text-danger">
+                                <FontAwesomeIcon icon={faInfoCircle}/> Must match the first password input field.
+                              </div>
+                          )}
+                        </>
                   )}
-
                   <br/>
                     <Button type={'submit'} disabled={!validMail || !validPwd || (isSignUp && !validMatch)} className="btn-secondary">
                       {isSignUp ? 'Sign Up' : 'Login'}

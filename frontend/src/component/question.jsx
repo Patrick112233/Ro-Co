@@ -85,7 +85,7 @@ const Question = () => {
                         {/*/Answare*/}
                         {/*Post*/}
                         <div className="d-flex flex-start w-100 pt-3 ">
-                            <div data-mdb-input-init className="form-outline w-100 ">
+                            <div className="form-outline w-100 ">
                                         <textarea className="form-control border-dark-subtle " id="textAreaExample" rows="4"
                                                   style={{background: '#fff'}}></textarea>
                             </div>

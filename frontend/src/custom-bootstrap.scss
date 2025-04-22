@@ -15,7 +15,7 @@ $blue: #2648BFFF;
 $indigo: #6610f2;
 $purple: #6f42c1;
 $pink: #e83e8c;
-$red: #d9534f;
+$red: #F42B24FF;
 $orange: #f39100;
 $yellow: #f0ad4e;
 $green: #5cb85c;
@@ -35,13 +35,13 @@ $dropdown-link-hover-color: $dropdown-link-color;
 $dropdown-link-hover-bg: $gray-100;
 $navbar-dark-color: rgba($white,.75);
 $navbar-dark-hover-color: $white;
-$secondary-bg: $body-color;
-
+$pagination-disabled-color: $gray-300;
+$pagination-hover-bg: $gray-300;
 
 @import '../node_modules/bootstrap/scss/bootstrap.scss';
 
 .body{
-    margin-bottom: 70px !important;
+    margin-bottom: 70 !important;
 }
 
 .slick-slide > div {
