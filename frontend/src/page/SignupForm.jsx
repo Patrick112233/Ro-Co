@@ -1,12 +1,11 @@
 import React, {useEffect, useRef, useState} from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
-
-import {faCheck, faTimes, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import logo from '../assets/ROLIP_Logo.jpg'
 import axios from '../api/axios.js'
-import useAuth from '../auth/useAuth';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 
 const LOGIN_URL = 'auth/login';
@@ -17,7 +16,9 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 
 const SignupForm = () => {
-  const { setAuth } = useAuth();
+  const signIn = useSignIn()
+
+
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
@@ -33,11 +34,9 @@ const SignupForm = () => {
 
   const [pwd, setPwd] = useState('');
   const [validPwd, setValidPwd] = useState(false);
-  const [pwdFocus, setPwdFocus] = useState(false);
 
   const [matchPwd, setMatchPwd] = useState('');
   const [validMatch, setValidMatch] = useState(false);
-  const [matchFocus, setMatchFocus] = useState(false);
 
   const [errMsg, setErrMsg] = useState('');
 
@@ -143,10 +142,26 @@ useEffect(() => {
 
 
       const accessToken = response?.data?.token;
+      const refreshToken = response?.data?.refresh; //@TODO: impl refresh token in backend!
       const authMail = response?.data?.email;
-      const expiresIn = response?.data?.expiresIn;
       const role = response?.data?.role;
-      setAuth({authMail, accessToken, expiresIn, role});
+
+
+      if(!signIn({
+        auth: {
+          token: accessToken,
+          type: 'Bearer'
+        },
+        refresh: refreshToken,
+        userState: {
+          name: authMail,
+          role: role,
+          uid: 123456 //@TODO: Get user ID ID
+        }
+      })){ // on Error
+          setErrMsg('Login failed');
+          return;
+      }
 
       setMail('');
       setPwd('');
@@ -165,7 +180,6 @@ useEffect(() => {
           setErrMsg('Registration railed for unknowen reason')
         }
       }
-      //errRef.current.focus();
     }
 
   }
@@ -239,7 +253,6 @@ useEffect(() => {
                       required
                       aria-invalid={validPwd ? "false" : "true"}
                       aria-describedby="pwdnote"
-                      onFocus={() => setPwdFocus(true)} onBlur={() => setPwdFocus(false)}
                       placeholder="Enter your Password"
                       className={!isSignUp || pwd.length <= 0 ? "form-control" : (validPwd ? "form-control is-valid" : "form-control is-invalid")}
                           />
@@ -265,8 +278,6 @@ useEffect(() => {
                               required
                               aria-invalid={validMatch ? "false" : "true"}
                               aria-describedby="confirmnote"
-                              onFocus={() => setMatchFocus(true)}
-                              onBlur={() => setMatchFocus(false)}
                               className={validMatch ? "form-control is-valid" : "form-control is-invalid"}
                               placeholder={"Confirm your Password"}
                           />

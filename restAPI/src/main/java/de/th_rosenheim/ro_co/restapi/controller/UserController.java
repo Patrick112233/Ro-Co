@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -54,6 +55,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @Secured("ADMIN")
     @Operation(summary = "Get all users", description = "Retrieve a paginated list of users based on the provided page and size. Max size is 100.")
     @GetMapping("/all")
     public ResponseEntity<List<OutUserDto>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
@@ -61,6 +63,7 @@ public class UserController {
         return ResponseEntity.ok(users.getContent());
     }
 
+    @Secured("ADMIN")
     @Operation(summary = "Delete user by ID", description = "Remove a user from the system by their unique ID.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable String id) {

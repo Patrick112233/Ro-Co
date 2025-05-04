@@ -1,19 +1,12 @@
 import {Navigate, Outlet, useLocation} from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import useAuth from "./useAuth.js";
+import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
+
 
 const ProtectedRoutes = () => {
-    const {auth} = useAuth();
+    const isAuthenticated = useIsAuthenticated()
     const location = useLocation();
-    let allowAccess = false;
-    if (!auth?.accessToken) {
-        allowAccess = false;
-    } else {
-        const decodedToken = jwtDecode(auth.accessToken);
-        allowAccess = Date.now() < decodedToken.exp  * 1000
-    }
 
-    if (allowAccess) {
+    if (isAuthenticated) {
         return <Outlet state={{ from: location }} replace/>
     } else {
         return <Navigate to="/login" state={{ from: location }} replace />
@@ -22,3 +15,4 @@ const ProtectedRoutes = () => {
 }
 
 export default ProtectedRoutes
+

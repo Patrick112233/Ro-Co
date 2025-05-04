@@ -20,18 +20,14 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "displayName", source = "dto.username")
     @Mapping(target = "email", source = "dto.email")
-    @Mapping(target = "role", source = "dto.role")
-    @Mapping(target = "verified", source = "dto.verified")
-    User outUserDTOtoUser(OutUserDto dto);
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "verified", ignore = true)
+    User registerUserDtotoUser(RegisterUserDto dto);
 
 
     @Mapping(target = "displayName", source = "dto.username")
     User inUserDtotoUser(InUserDto dto);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "username", source = "dto.username")
-    @Mapping(target = "email", source = "dto.email")
-    LoginResponseDto registerUserDtoToLoginResponse(RegisterUserDto dto);
 
 }
 

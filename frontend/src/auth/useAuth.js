@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+/*import { useContext } from 'react';
 import AuthContext from './AuthProvider.jsx';
 
 const useAuth = () => {
@@ -6,3 +6,4 @@ const useAuth = () => {
 };
 
 export default useAuth;
+ */

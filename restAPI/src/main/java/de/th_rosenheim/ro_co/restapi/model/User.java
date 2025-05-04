@@ -1,45 +1,22 @@
 package de.th_rosenheim.ro_co.restapi.model;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import de.th_rosenheim.ro_co.restapi.security.Role;
 
 import java.util.*;
 
 
+@Data
 @Document(collection="User")
 public class User implements UserDetails {
-
-    //define internal role enum(sTring)
-
-    public enum Role {
-        EXTERNAL_USER("EXTERNAL_USER"),
-        USER("USER"),
-        ADMIN("ADMIN");
-
-        private final String title;
-
-        Role(String role) {
-            this.title = role;
-        }
-
-        public String getRole() {
-            return title;
-        }
-
-        public static Role fromString(String role) {
-            return Arrays.stream(Role.values())
-                    .filter(r -> r.getRole().equals(role))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid role: " + role));
-        }
-    }
-
-
 
     /**
      * The ID of the User.
@@ -51,18 +28,16 @@ public class User implements UserDetails {
 
     @Indexed(unique=true, direction= IndexDirection.DESCENDING)
     private String email;
-
     private String password; //should be always encrypted!
-
     private String displayName;
     private boolean verified = false; //default is false, set to true after email verification
     private String role;
 
-    // Getter und Setter für id
-    public String getId() {
-        return id;
-    }
+    @DocumentReference(lazy = true)
+    private List<RefreshToken> refreshTokens;
 
+
+    // Getter und Setter für id
     public void setId(String id) {
         if (id == null) {
             throw new IllegalArgumentException("ID cannot be null");
@@ -72,15 +47,6 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
 
     @Override
@@ -100,52 +66,26 @@ public class User implements UserDetails {
     }
 
     /**
-     * Returns the email of the user as the username. Not the display name.
-     * @return
+     * Gibt die E-Mail des Benutzers als Benutzernamen zurück. Nicht den Anzeigenamen.
+     * @return die E-Mail des Benutzers
      */
     @Override
     public String getUsername() {
         return this.getEmail();
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
-    // AllArgsConstructor
-    public User(String id, String email, String password, String displayName, boolean verrified, String role) {
-        this.id = id;
+
+    public User(String email, String password, String role) {
         this.email = email;
         this.password = password;
-        this.displayName = displayName;
-        this.verified = verrified;
-        this.role = role;
+        if (role == null) {
+            this.role = Role.USER.toString();
+        }else {
+            this.role = Role.fromString(role).getRole();
+        }
     }
 
-    public User(String email, String password, Role role) {
-        this.email = email;
-        this.password = password;
-        this.role = role.getRole();
-    }
-
-
-
-    // NoArgsConstructor
-    public User() {
-    }
-
-
-    public boolean isVerified() {
-        return verified;
-    }
-
-    public void setVerified(boolean verified) {
-        this.verified = verified;
-    }
-
-    public String getRole() {
-        return role;
-    }
 
     public Role getRoleEnum() {
         if (role == null) {
@@ -173,11 +113,11 @@ public class User implements UserDetails {
         this.role = role.getRole();
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public void addRefreshToken(RefreshToken refreshToken) {
+        if (refreshTokens == null) {
+            refreshTokens = new ArrayList<>();
+        }
+        refreshTokens.add(refreshToken);
     }
 }

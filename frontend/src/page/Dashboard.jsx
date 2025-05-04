@@ -7,8 +7,10 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import CustomNavbar from './../component/navbar.jsx';
-import AddBtn from "../component/addBtn.jsx";
+import AddBtn from "../component/newBtn.jsx";
 import Question from "../component/question.jsx";
+import newBtn from "../component/newBtn.jsx";
+import NewBtn from "../component/newBtn.jsx";
 
 
 const Dashboard = () => {
@@ -83,7 +85,7 @@ const Dashboard = () => {
     return (
         <>
             <CustomNavbar/>
-            <AddBtn/>
+            <NewBtn/>
             <div className="m-auto justify-content-center" style={{width: '90vw'}}>
                 <div className="mt-5">
                     <Slider {...sliderSettings}>
@@ -101,32 +103,7 @@ const Dashboard = () => {
             <div>
                 <Question/>
                 <Question/>
-
-                <div className="d-flex justify-content-center">
-                    <ul className="pagination">
-                            <li className="page-item">
-                                <a className="page-link" href="#">«</a>
-                            </li>
-                            <li className="page-item active">
-                                <a className="page-link" href="#">1</a>
-                            </li>
-                            <li className="page-item">
-                                <a className="page-link" href="#">2</a>
-                            </li>
-                            <li className="page-item">
-                                <a className="page-link" href="#">3</a>
-                            </li>
-                            <li className="page-item">
-                                <a className="page-link" href="#">4</a>
-                            </li>
-                            <li className="page-item">
-                                <a className="page-link" href="#">5</a>
-                            </li>
-                            <li className="page-item">
-                                <a className="page-link" href="#">»</a>
-                            </li>
-                        </ul>
-                </div>
+                
 
             </div>
             {/*/Inner main*/}
