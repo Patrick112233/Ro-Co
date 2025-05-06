@@ -5,6 +5,7 @@
 
 package de.th_rosenheim.ro_co.restapi.security;
 
+import de.th_rosenheim.ro_co.restapi.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

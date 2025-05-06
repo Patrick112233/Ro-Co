@@ -1,12 +1,12 @@
 package de.th_rosenheim.ro_co.restapi.service;
 
 import de.th_rosenheim.ro_co.restapi.exceptions.NonUniqueException;
+import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
 import de.th_rosenheim.ro_co.restapi.security.AuthenticationProviderConfiguration;
 import de.th_rosenheim.ro_co.restapi.dto.*;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import de.th_rosenheim.ro_co.restapi.security.JwtService;
-import de.th_rosenheim.ro_co.restapi.security.Role;
+import de.th_rosenheim.ro_co.restapi.model.Role;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static de.th_rosenheim.ro_co.restapi.security.JwtService.hashToken;
+import static de.th_rosenheim.ro_co.restapi.service.JwtService.hashToken;
 
 @Service
 public class AuthenticationService {

@@ -1,4 +1,4 @@
-package de.th_rosenheim.ro_co.restapi.security;
+package de.th_rosenheim.ro_co.restapi.model;
 
 import java.util.Arrays;
 

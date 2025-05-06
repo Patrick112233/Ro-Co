@@ -1,4 +1,4 @@
-package de.th_rosenheim.ro_co.restapi.security;
+package de.th_rosenheim.ro_co.restapi.service;
 
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;

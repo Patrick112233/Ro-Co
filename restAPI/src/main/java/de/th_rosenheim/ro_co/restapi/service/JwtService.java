@@ -5,7 +5,7 @@
  * @See {@link https://medium.com/@tericcabrel/implement-jwt-authentication-in-a-spring-boot-3-application-5839e4fd8fac}
  */
 
-package de.th_rosenheim.ro_co.restapi.security;
+package de.th_rosenheim.ro_co.restapi.service;
 
 import de.th_rosenheim.ro_co.restapi.model.RefreshToken;
 import de.th_rosenheim.ro_co.restapi.model.User;

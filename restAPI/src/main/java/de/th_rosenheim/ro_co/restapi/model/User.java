@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import de.th_rosenheim.ro_co.restapi.security.Role;
 
 import java.util.*;
 

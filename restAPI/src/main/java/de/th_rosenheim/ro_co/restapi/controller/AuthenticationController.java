@@ -71,7 +71,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Refresh JWT token", description = "Refresh the JWT token using a refresh token.")
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LoginOutDto> refresh(@Valid @RequestHeader ("Authorization") String authHeader) {
+    public ResponseEntity<LoginOutDto> refresh(@RequestHeader ("Authorization") String authHeader) {
         Optional<LoginOutDto> responseDTO = authenticationService.refresh(authHeader);
         return responseDTO.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
     }
@@ -83,25 +83,25 @@ public class AuthenticationController {
             BadCredentialsException.class
     })
     public ResponseEntity<Object> handleValidationExceptions(Exception ex) {
-        ErrorDTO error = new ErrorDTO("The credentials entered are incorrect or the account has been disabled.");
+        ErrorDto error = new ErrorDto("The credentials entered are incorrect or the account has been disabled.");
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-        ErrorDTO error = new ErrorDTO("The request body is not readable or is missing required fields.");
+        ErrorDto error = new ErrorDto("The request body is not readable or is missing required fields.");
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(NonUniqueException.class)
     public ResponseEntity<Object> handleNonUniqueException(NonUniqueException ex) {
-        ErrorDTO error = new ErrorDTO("The email address is already in use.");
+        ErrorDto error = new ErrorDto("The email address is already in use.");
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
-        ErrorDTO error = new ErrorDTO("The request body is not readable or is missing required fields or invalid inputs.");
+        ErrorDto error = new ErrorDto("The request body is not readable or is missing required fields or invalid inputs.");
         return ResponseEntity.badRequest().body(error);
     }
 

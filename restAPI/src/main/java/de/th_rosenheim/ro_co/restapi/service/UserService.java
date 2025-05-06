@@ -3,10 +3,9 @@ package de.th_rosenheim.ro_co.restapi.service;
 import de.th_rosenheim.ro_co.restapi.dto.InUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
-import de.th_rosenheim.ro_co.restapi.dto.UserMapper;
+import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import de.th_rosenheim.ro_co.restapi.security.AuthenticationProviderConfiguration;
-import jakarta.validation.Valid;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -69,7 +68,7 @@ public class UserService {
         repository.deleteById(id);
     }
 
-    public void resetPassword(@Valid LoginUserDto loginUserDto) {
+    public void resetPassword(LoginUserDto loginUserDto) {
         Optional<User> user = repository.findByEmail(loginUserDto.getEmail());
         if (user.isEmpty()) {
             throw new UsernameNotFoundException("User with email " + loginUserDto.getEmail() + " not found");
