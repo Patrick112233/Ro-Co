@@ -1,0 +1,59 @@
+@use 'sass:color';
+
+$white: #fff;
+$gray-100: #EBEBEB;
+$gray-200: #4E5D6C;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #868e96;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+$black: #000;
+$blue: #2648BFFF;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #e83e8c;
+$red: #F42B24FF;
+$orange: #f39100;
+$yellow: #f0ad4e;
+$green: #5cb85c;
+$teal: #20c997;
+$cyan: #5bc0de;
+$primary: $orange;
+$secondary: $gray-200;
+$success: $green;
+$info: $cyan;
+$warning: $yellow;
+$danger: $red;
+$light: $white;
+$dark: $gray-200;
+$body-color: $gray-600;
+$dropdown-link-color: $body-color;
+$dropdown-link-hover-color: $dropdown-link-color;
+$dropdown-link-hover-bg: $gray-100;
+$navbar-dark-color: rgba($white,.75);
+$navbar-dark-hover-color: $white;
+$pagination-disabled-color: $gray-300;
+$pagination-hover-bg: $gray-300;
+
+@import '../node_modules/bootstrap/scss/bootstrap.scss';
+
+.body{
+    margin-bottom: 70px !important;
+}
+
+.slick-slide > div {
+    margin: 0px;
+}
+.slick-track {
+    margin: 0 auto;
+}
+
+.slick-prev:before,
+.slick-next:before {
+    color:$primary !important;
+}
+
+

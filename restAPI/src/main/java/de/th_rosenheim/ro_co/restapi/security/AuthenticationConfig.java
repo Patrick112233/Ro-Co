@@ -26,7 +26,7 @@ public class AuthenticationConfig {
     }
 
     private static final String[] WHITE_LIST_AUTH = {
-            "/auth/**",
+            "/api/v1/auth/**",
             "/v3/api-docs/**",
             "/swagger-resources",
             "/swagger-resources/**",
@@ -36,12 +36,13 @@ public class AuthenticationConfig {
     };
 
 
-    /**
-     * Defines the use SecurityFilterChain for jwt authentifcation
-     * @param http
-     * @return
-     * @throws Exception
-     */
+/**
+ * Configures the SecurityFilterChain for JWT authentication.
+ *
+ * @param http the HttpSecurity to configure
+ * @return the configured SecurityFilterChain
+ * @throws Exception if an error occurs during configuration
+ */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http

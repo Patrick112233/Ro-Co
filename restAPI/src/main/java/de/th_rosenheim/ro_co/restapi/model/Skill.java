@@ -1,8 +1,10 @@
 package de.th_rosenheim.ro_co.restapi.model;
 
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Data
 @Document("skill")
 public class Skill{
 
@@ -14,14 +16,6 @@ public class Skill{
         super();
         this.name = name;
         this.setColorValue(colorValue);
-    }
-
-    public int getColorValue() {
-        return colorValue;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setColorValue(int colorValue) {

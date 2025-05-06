@@ -30,10 +30,10 @@ public class AuthenticationProviderConfiguration {
 
 
     /**
-     * Set Mongo DB as AuthenticationManager to authenticate users in Useres table.
-     * @param http
-     * @return
-     * @throws Exception
+     * Configures the AuthenticationManager to authenticate users using the UserDetailsService.
+     * @param http the HttpSecurity object to configure
+     * @return the configured AuthenticationManager
+     * @throws Exception if an error occurs during configuration
      */
     @Bean
     public AuthenticationManager customAuthenticationManager(HttpSecurity http) throws Exception {

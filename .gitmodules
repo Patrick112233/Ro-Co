@@ -1,0 +1,3 @@
+[submodule "frontend/emulator/Android-Emulator-image"]
+	path = frontend/emulator/Android-Emulator-image
+	url = git@github.com:amrsa1/Android-Emulator-image.git

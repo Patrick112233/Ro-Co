@@ -10,6 +10,7 @@ public class RoCoRest{
 
 
     public static void main(String[] args) {
+        //primt env vars
         SpringApplication.run(RoCoRest.class, args);
     }
 

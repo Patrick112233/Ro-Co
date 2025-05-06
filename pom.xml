@@ -28,13 +28,11 @@
 	</scm>
 
 	<modules>
-		<module>frontend</module>
 		<module>restAPI</module>
 	</modules>
 
 	<properties>
-		<java.version>24</java.version>
-		<vaadin.version>24.7.0</vaadin.version>
+		<java.version>21</java.version>
 	</properties>
 
 	<dependencies>

@@ -1,9 +1,6 @@
 package de.th_rosenheim.ro_co.restapi.controller;
 
-import de.th_rosenheim.ro_co.restapi.dto.ErrorDTO;
-import de.th_rosenheim.ro_co.restapi.dto.LoginResponseDto;
-import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
-import de.th_rosenheim.ro_co.restapi.dto.RegisterUserDto;
+import de.th_rosenheim.ro_co.restapi.dto.*;
 import de.th_rosenheim.ro_co.restapi.exceptions.NonUniqueException;
 import de.th_rosenheim.ro_co.restapi.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.Optional;
 
-@RequestMapping("/auth")
+@RequestMapping("api/v1/auth")
 @RestController
 public class AuthenticationController {
 
@@ -33,32 +30,50 @@ public class AuthenticationController {
 
     @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
     @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<LoginResponseDto> register(@Valid @RequestBody RegisterUserDto registerUserDto) {
-        Optional<LoginResponseDto> responseDTO = authenticationService.signup(registerUserDto);
+    public ResponseEntity<OutUserDto> register(@Valid @RequestBody RegisterUserDto registerUserDto) {
+        Optional<OutUserDto> responseDTO = authenticationService.signup(registerUserDto);
         if (responseDTO.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+
         URI uri = UriComponentsBuilder
-                .fromPath("/user/{id}")
+                .fromPath("/api/v1/login")
                 .buildAndExpand(responseDTO.get().getId())
                 .toUri();
         return ResponseEntity.created(uri).body(responseDTO.get());
     }
 
-
-    @Operation(summary = "Login as a user", description = "Get a JWT token by providing user credentials as JSON.")
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> authenticate(@Valid @RequestBody LoginUserDto loginUserDto) {
-        Optional<LoginResponseDto> loginResponse = authenticationService.authenticate(loginUserDto);
-        return loginResponse.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
+    /**
+     * Check availability of username.
+     * @param username the username to check
+     * @return ResponseEntity indicating availability status
+     */
+    @Operation(summary = "Check username availability", description = "Check if a username is already taken. Returns 200 if available, 409 if taken, and 400 for invalid input.")
+    @GetMapping(value = "/signup/username")
+    public ResponseEntity checkUserName(@RequestParam String username) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        if (authenticationService.isDisplayNameAvailable(username)) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(409).build();
+        }
     }
 
 
-    @Operation(summary = "Refresh token", description = "Refresh the JWT token by providing the old (but valid) token.")
-    @PutMapping("/login")
-    public ResponseEntity<LoginResponseDto> refresh(@Valid @RequestHeader(name="Authorization") String token) {
-        Optional<LoginResponseDto> loginResponse = authenticationService.refresh(token);
+    @Operation(summary = "Login as a user", description = "Get a JWT token by providing user credentials as JSON.")
+    @PostMapping("/login")
+    public ResponseEntity<LoginOutDto> authenticate(@Valid @RequestBody LoginUserDto loginUserDto) {
+        Optional<LoginOutDto> loginResponse = authenticationService.authenticate(loginUserDto);
         return loginResponse.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
+    }
+
+    @Operation(summary = "Refresh JWT token", description = "Refresh the JWT token using a refresh token.")
+    @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LoginOutDto> refresh(@Valid @RequestHeader ("Authorization") String authHeader) {
+        Optional<LoginOutDto> responseDTO = authenticationService.refresh(authHeader);
+        return responseDTO.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
 
@@ -84,5 +99,10 @@ public class AuthenticationController {
         return ResponseEntity.badRequest().body(error);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorDTO error = new ErrorDTO("The request body is not readable or is missing required fields or invalid inputs.");
+        return ResponseEntity.badRequest().body(error);
+    }
 
 }

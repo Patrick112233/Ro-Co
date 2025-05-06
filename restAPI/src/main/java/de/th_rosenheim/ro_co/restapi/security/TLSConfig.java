@@ -47,8 +47,8 @@ public class TLSConfig {
     }
 
     /**
-     * Creates a connector to redirect HTTP traffic to HTTPS
-     * @return
+     * Creates a connector to redirect HTTP traffic to HTTPS.
+     * @return a configured Connector object for HTTP to HTTPS redirection
      */
     private Connector httpToHttpsRedirectConnector() {
         Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);

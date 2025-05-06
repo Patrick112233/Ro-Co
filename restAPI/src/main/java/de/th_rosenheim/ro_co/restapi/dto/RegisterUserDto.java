@@ -1,32 +1,19 @@
 package de.th_rosenheim.ro_co.restapi.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+
+@Getter
+@Setter
 public class RegisterUserDto extends LoginUserDto{
-    private String firstName;
-    private String lastName;
+    @NotNull
+    @Size(min = 3, max = 255)
+    private String username;
 
-    public RegisterUserDto(String email, String password, String firstName, String lastName) {
+    public RegisterUserDto(String email, String password, String userName) {
         super(email, password);
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.username = userName;
     }
 
-    public RegisterUserDto() {
-        // Default constructor for deserialization
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
 }
