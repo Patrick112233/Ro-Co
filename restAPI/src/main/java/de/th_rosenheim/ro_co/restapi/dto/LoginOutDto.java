@@ -9,7 +9,8 @@ import lombok.*;
 public class LoginOutDto extends OutUserDto {
     private String token;
     private String refreshToken;
-    private long expiresIn;
+    private long tokenExpiresIn;
+    private long refreshExpiresIn;
 
 
     public LoginOutDto(OutUserDto user){

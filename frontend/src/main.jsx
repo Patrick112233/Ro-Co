@@ -11,18 +11,16 @@ import Dashboard from "./page/Dashboard.jsx";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './custom-bootstrap.scss';
-import RequireAuth from "@auth-kit/react-router/RequireAuth";
-import AuthOutlet from "@auth-kit/react-router/AuthOutlet";
 import ProtectedRoutes from "./auth/ProtectedRoutes.jsx";
-
-
+import refresh from './auth/refresh.js';
 
 
 const store = createStore({
     authName: '_auth',
     authType: 'cookie',
     cookieDomain: window.location.hostname,
-    cookieSecure: true
+    cookieSecure: true,
+    refresh: refresh
 });
 /*
 const store = createStore({

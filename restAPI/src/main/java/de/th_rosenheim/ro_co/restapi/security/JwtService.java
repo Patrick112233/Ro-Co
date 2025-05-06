@@ -114,7 +114,7 @@ public class JwtService {
 
         // Save the refresh token in the database for invalidation
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken_hash(hashToken(token));
+        refreshToken.setTokenHash(hashToken(token));
 
         refreshTokenRepository.save(refreshToken);
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -149,8 +149,12 @@ public class JwtService {
     /**
      * @return the expiration time of the springboot application.properties.
      */
-    public long getExpirationTime() {
+    public long getTokenExpirationTime() {
         return jwtExpiration;
+    }
+
+    public long getRefreshTokenExpirationTime() {
+        return jwtRefreshExpiration;
     }
 
     public boolean isLoginTokenValid(String token, UserDetails userDetails) {
@@ -171,7 +175,7 @@ public class JwtService {
         }else{
             //delete refresh token from database
             String token_hash = hashToken(token);
-            Optional<RefreshToken> refreshToken = Optional.ofNullable(refreshTokenRepository.findByToken(token_hash));
+            Optional<RefreshToken> refreshToken = refreshTokenRepository.findByTokenHash(token_hash);
             refreshToken.ifPresent(refreshTokenRepository::delete);
             return false;
         }

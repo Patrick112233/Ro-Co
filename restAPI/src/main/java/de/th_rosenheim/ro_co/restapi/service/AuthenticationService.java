@@ -88,7 +88,8 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
         LoginOutDto response = new LoginOutDto(outUserDTO);
         response.setRefreshToken(refreshToken);
         response.setToken(jwtToken);
-        response.setExpiresIn(jwtService.getExpirationTime());
+        response.setTokenExpiresIn(jwtService.getTokenExpirationTime());
+        response.setRefreshExpiresIn(jwtService.getRefreshTokenExpirationTime());
         return Optional.of(response);
     }
 
@@ -111,7 +112,7 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
 
         //check if the refresh token is still active
         boolean is_active_token = user.get().getRefreshTokens().stream().anyMatch(refreshToken ->
-                hashToken(refreshTokenCandidate).equals(refreshToken.getToken_hash())
+                hashToken(refreshTokenCandidate).equals(refreshToken.getTokenHash())
         );
 
         if (!is_active_token) {
@@ -125,7 +126,8 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
         LoginOutDto response = new LoginOutDto(outUserDTO);
         response.setToken(jwtToken);
         response.setRefreshToken(refreshTokenCandidate);
-        response.setExpiresIn(jwtService.getExpirationTime());
+        response.setRefreshExpiresIn(jwtService.getRefreshTokenExpirationTime());
+        response.setTokenExpiresIn(jwtService.getTokenExpirationTime());
         return Optional.of(response);
     }
 
