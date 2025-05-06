@@ -142,9 +142,10 @@ useEffect(() => {
 
 
       const accessToken = response?.data?.token;
-      const refreshToken = response?.data?.refresh; //@TODO: impl refresh token in backend!
+      const refreshToken = response?.data?.refreshToken;
       const authMail = response?.data?.email;
       const role = response?.data?.role;
+      const userID = response?.data?.id;
 
 
       if(!signIn({
@@ -156,7 +157,7 @@ useEffect(() => {
         userState: {
           name: authMail,
           role: role,
-          uid: 123456 //@TODO: Get user ID ID
+          uid: userID
         }
       })){ // on Error
           setErrMsg('Login failed');

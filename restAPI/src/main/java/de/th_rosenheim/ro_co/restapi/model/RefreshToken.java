@@ -10,6 +10,6 @@ public class RefreshToken {
 
     @Id
     private String id;
-    private String token_hash; //should be always encrypted
+    private String tokenHash; //should be always encrypted
 
 }
