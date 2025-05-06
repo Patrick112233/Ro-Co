@@ -16,6 +16,7 @@ import java.lang.annotation.Annotation;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 
+@SuppressWarnings("unused")
 @AnalyzeClasses(packages = "de.th_rosenheim.ro_co.restapi", importOptions = {ImportOption.DoNotIncludeTests.class, ImportOption.DoNotIncludeJars.class})
 public class ArchitectureAnnotationTest {
 
@@ -40,7 +41,7 @@ public class ArchitectureAnnotationTest {
 
 
     private static ArchCondition<JavaMethod> parameterHasAnnotationIfAnnotatedWith( Class<? extends Annotation> ifAnnotation, Class<? extends Annotation> annotatedWith) {
-        return new ArchCondition<JavaMethod>("a parameter annotated with " +ifAnnotation.getCanonicalName()+ " also be annotated with " + annotatedWith.getCanonicalName()) {
+        return new ArchCondition<>("a parameter annotated with " +ifAnnotation.getCanonicalName()+ " also be annotated with " + annotatedWith.getCanonicalName()) {
             @Override
             public void check(JavaMethod method, ConditionEvents events) {
                 boolean satisfiesAnnotation = true;
@@ -51,23 +52,6 @@ public class ArchitectureAnnotationTest {
                     }
                 }
                 String message = "Method " + method.getName() + " in " + method.getOwner().getFullName()  + " has" + (satisfiesAnnotation? " ": " missing")+ annotatedWith.getCanonicalName() + "  annotation for " + ifAnnotation.getCanonicalName() + " annotated parameter";
-                events.add(new SimpleConditionEvent(method, satisfiesAnnotation, message));
-            }
-        };
-    }
-
-    private static ArchCondition<JavaMethod> haveValideRequestBodies() {
-        return new ArchCondition<JavaMethod>("has @Valid annotation for @RequestBody parameter") {
-            @Override
-            public void check(JavaMethod method, ConditionEvents events) {
-                boolean satisfiesAnnotation = true;
-                for (JavaParameter p : method.getParameters()){
-                    if (p.isAnnotatedWith(RequestBody.class)) {
-                        satisfiesAnnotation = p.isAnnotatedWith(Valid.class);
-                        break;
-                    }
-                }
-                String message = "Method " + method.getName() + " in " + method.getOwner().getFullName()  + " has" + (satisfiesAnnotation? " ": " missing")+ " @Valid annotation for @RequestBody parameter";
                 events.add(new SimpleConditionEvent(method, satisfiesAnnotation, message));
             }
         };
