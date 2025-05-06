@@ -112,7 +112,7 @@ useEffect(() => {
       return;
     }
     try {
-      let response = null;
+      let response;
       if (isSignUp) {
         response = await axios.post(
             SIGNUP_URL,
