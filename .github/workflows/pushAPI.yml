@@ -104,6 +104,7 @@ jobs:
           args: >
             -Dsonar.projectKey=Patrick112233_Ro-Co
             -Dsonar.organization=patrick112233
+            -Dsonar.java.binaries=restAPI/target/classes
 
 #  SonarQube:
 #    name: Build and analyze
