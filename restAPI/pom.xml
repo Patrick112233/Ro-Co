@@ -108,6 +108,21 @@
     </dependencies>
     <build>
         <plugins>
+        <plugin>
+            <groupId>com.github.ferstl</groupId>
+            <artifactId>depgraph-maven-plugin</artifactId>
+            <version>4.0.1</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>graph</goal>
+                    </goals>
+                    <configuration>
+                        <graphFormat>json</graphFormat>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
