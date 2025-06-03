@@ -27,7 +27,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Execute test via Maven
-        run: mvn -B verify --file pom.xml
+        run: mvn -B verify --file restAPI/pom.xml
 
       # Add JaCoCo code coverage to the workflow
       - name: JaCoCo Code Coverage Report
