@@ -32,6 +32,8 @@
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <org.lombok.version>1.18.38</org.lombok.version>
         <java.version>21</java.version>
+        <sonar.organization>patrick112233</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencies>
