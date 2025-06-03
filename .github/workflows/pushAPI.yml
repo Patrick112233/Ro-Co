@@ -111,6 +111,8 @@ jobs:
         with:
           name: restapi-artifacts
           path: restAPI/target
+      - name: List target directory for debugging
+        run: ls -lR restAPI/target
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
@@ -119,7 +121,7 @@ jobs:
           args: >
             -Dsonar.projectKey=Patrick112233_Ro-Co
             -Dsonar.organization=patrick112233
-            -Dsonar.java.binaries=restAPI/target/classes
+            -Dsonar.java.binaries=restAPI/target
 
 #  SonarQube:
 #    name: Build and analyze
