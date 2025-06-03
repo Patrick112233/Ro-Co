@@ -88,6 +88,13 @@ jobs:
           directory: restAPI
           correlator: ${{ github.job }}-${{ matrix.directory }}
 
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: restapi-artifacts
+          path: restAPI/target/*.jar
+          retention-days: 10
+
 
   sonarqube:
     name: SonarQube
@@ -97,8 +104,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Build with Maven
-        run: mvn -B package --file restAPI/pom.xml
+      #- name: Build with Maven
+      #  run: mvn -B package --file restAPI/pom.xml
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: restapi-artifacts
+          path: restAPI/target
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
