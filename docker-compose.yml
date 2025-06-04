@@ -13,18 +13,21 @@ services:
   #  depends_on:
   #    - rest_api
 
-  #rest_api:
-  #  image: openjdk:24-jdk
-  #  ports:
-  #    - "8081:8081"
-  #  volumes:
-  #    - ./target:.
-  #  #command: ["java","-jar","/app.jar"]
-  #  links:
-  #    - mongo
-  #     - frontend
-  #  depends_on:
-  #    - mongo
+
+  rest_api:
+    build: ./restAPI
+    ports:
+      - "8081:8081"
+    env_file:
+      - config_own.env
+    environment:
+      - MONGO_INITDB_HOST=mongo
+    links:
+      - mongo
+      - mongo-express
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   mongo:
     image: mongo:6.0.21
@@ -32,10 +35,15 @@ services:
     ports:
       - "27017:27017"
     env_file:
-      - ./env/config_own.env
+      - config_own.env
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - db-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo-express:
     image: mongo-express
@@ -43,7 +51,7 @@ services:
     ports:
       - "8082:8081"
     env_file:
-      - env/config_own.env
+      - config_own.env
 
 volumes:
   db-data:

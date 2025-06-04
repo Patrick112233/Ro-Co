@@ -82,6 +82,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+      - name: GnerateKeyStore
+        run: |
+          keytool -genkeypair -alias restapi -keyalg RSA -keystore restAPI/keystore.jks -storepass changeit -keypass changeit -dname "CN=RestAPI, OU=Development, O=MyCompany, L=City, ST=State, C=Country" -validity 3650
       - name: Execute integration test via Maven
         run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true
 
