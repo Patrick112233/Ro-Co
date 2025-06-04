@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class AuthControllerIntegrationTest {
+class AuthControllerIT {
 
     static final String MONGO_INITDB_ROOT_USERNAME = "deinUser";
     static final String MONGO_INITDB_ROOT_PASSWORD = "deinPasswort";
