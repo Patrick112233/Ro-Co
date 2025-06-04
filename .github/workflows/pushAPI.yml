@@ -27,7 +27,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Execute test via Maven
-        run: mvn -B verify --file restAPI/pom.xml -DexcludeTags=integration,architecture
+        run: mvn -B verify --file restAPI/pom.xml -Dgroups='!integration,!architecture'
 
       # Add JaCoCo code coverage to the workflow
       - name: JaCoCo Code Coverage Report
@@ -69,7 +69,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Execute architecture test via Maven
-        run: mvn -B verify --file restAPI/pom.xml -DincludeTags=architecture -Djacoco.skip=true
+        run: mvn -B verify --file restAPI/pom.xml -Dgroups=architecture -Djacoco.skip=true
 
   integrationTestAPI:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Execute integration test via Maven
-        run: mvn -B verify --file restAPI/pom.xml -DincludeTags=integration -Djacoco.skip=true
+        run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true
 
   buildAPI:
     runs-on: ubuntu-latest
