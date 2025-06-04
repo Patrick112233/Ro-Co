@@ -10,6 +10,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.validation.Valid;
+import org.junit.jupiter.api.Tag;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.lang.annotation.Annotation;
@@ -17,6 +18,7 @@ import java.lang.annotation.Annotation;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 
 @SuppressWarnings("unused")
+@Tag("architecture")
 @AnalyzeClasses(packages = "de.th_rosenheim.ro_co.restapi", importOptions = {ImportOption.DoNotIncludeTests.class, ImportOption.DoNotIncludeJars.class})
 public class ArchitectureAnnotationTest {
 
