@@ -210,7 +210,11 @@ public class JwtService {
             UserDetails userDetails,
             long expiration
     ) {
-        PrivateKey key = getSignInKey();
+        Optional<PrivateKey> optionalKey = getSignInKey();
+        if (optionalKey.isEmpty()) {
+            throw new IllegalStateException("Signing key could not be retrieved");
+        }
+        PrivateKey key = optionalKey.get();
         return Jwts.
                     builder()
                     .claims(extraClaims)
@@ -244,15 +248,15 @@ public class JwtService {
                 .getPayload();
     }
 
-    private PrivateKey getSignInKey() {
+    private Optional<PrivateKey> getSignInKey() {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             byte[] keyBytes = Base64.getDecoder().decode(secretKey);
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-            return keyFactory.generatePrivate(keySpec);
+            return Optional.ofNullable(keyFactory.generatePrivate(keySpec));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
             logger.error(e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 
