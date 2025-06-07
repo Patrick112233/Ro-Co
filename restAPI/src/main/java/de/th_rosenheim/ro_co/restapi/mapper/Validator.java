@@ -3,14 +3,16 @@ package de.th_rosenheim.ro_co.restapi.mapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
 
 import java.util.Set;
 
 public class Validator {
+    private Validator() {
+        // Utility class
+    }
 
-    static public <T> T validationCheck(T object) {
+    public static <T> T validationCheck(T object) {
         Set<ConstraintViolation<T>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(object);
         if (!violations.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder("Validation failed: ");

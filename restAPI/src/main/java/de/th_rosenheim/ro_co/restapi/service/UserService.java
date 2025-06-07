@@ -7,7 +7,6 @@ import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import jakarta.validation.ValidationException;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -25,8 +24,11 @@ import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
 @Service
 public class UserService {
 
-    @Autowired
     private UserRepository repository;
+
+    UserService(UserRepository repository) {
+        this.repository = repository;
+    }
 
 
 

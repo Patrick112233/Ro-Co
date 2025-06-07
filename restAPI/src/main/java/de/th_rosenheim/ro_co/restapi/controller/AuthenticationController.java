@@ -50,7 +50,7 @@ public class AuthenticationController {
      */
     @Operation(summary = "Check username availability", description = "Check if a username is already taken. Returns 200 if available, 409 if taken, and 400 for invalid input.")
     @GetMapping(value = "/signup/username")
-    public ResponseEntity checkUserName(@RequestParam String username) {
+    public ResponseEntity<Void> checkUserName(@RequestParam String username) {
         if (username == null || username.isEmpty()) {
             throw new IllegalArgumentException();
         }

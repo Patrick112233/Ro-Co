@@ -4,6 +4,7 @@ import de.th_rosenheim.ro_co.restapi.model.RefreshToken;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.RefreshTokenRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,24 +29,7 @@ class JwtServiceTest {
     /*Mocking*/
     static final String X508_PUBLIC_KEY = "MIICsTCCAhKgAwIBAgIUR21wSocqd/qVh/X9qqgV8pMWua0wCgYIKoZIzj0EAwIwajELMAkGA1UEBhMCREUxEDAOBgNVBAgMB0JhdmFyaWExEjAQBgNVBAcMCVJvc2VuaGVpbTENMAsGA1UECgwEUm9DbzEUMBIGA1UECwwLSW5mb3JtYXRpY3MxEDAOBgNVBAMMB1Jlc3RBUEkwHhcNMjUwNjA1MTIyNDA2WhcNMjYwNjA1MTIyNDA2WjBqMQswCQYDVQQGEwJERTEQMA4GA1UECAwHQmF2YXJpYTESMBAGA1UEBwwJUm9zZW5oZWltMQ0wCwYDVQQKDARSb0NvMRQwEgYDVQQLDAtJbmZvcm1hdGljczEQMA4GA1UEAwwHUmVzdEFQSTCBmzAQBgcqhkjOPQIBBgUrgQQAIwOBhgAEAB3GJ10//qh6mKdKxXAxa7iKaYMQVJWI8/CRbRPt2QGg4xXILoefyyk3HUfvHf8IwN+qUJKEA52qQzVEvfvibr6MAV9vdrMOJdXiM8qOEqtuuVbTZ6TGCE4Me4k0xEbSh4Uyxrbl0IcwdEQ1dKZBntKsLgOL/4kmgsxnaz9xJ+lZItKko1MwUTAdBgNVHQ4EFgQUpNvBVbqscsBdPW3UEK5srHjVRvIwHwYDVR0jBBgwFoAUpNvBVbqscsBdPW3UEK5srHjVRvIwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgOBjAAwgYgCQgFYx6IM3dPoJKPOb+6e1utOvQPQWt6GsPuekFcMjVKaOxUk9j2o8FxX0vthoXXDeGQg0vpZQ5Hw3mMSGuqpCT7+igJCANdsk9FUGyBi0EXgdF5XmfJ9vUfRPnnJF+qmLelAtLi54+724M4pDwjqsaGrbRC2Jgy72AZL9f7/eTrXbYicxon3";
     static final String PKCS8_PRIVATE_KEY = "MIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIB03FyloRwpH0/iQcOG099bgoHKSXYbHy8d7Yh8VFkoO1A/lHxtOd8ZZ+xRTH9tCSWeWElz9ZNyzxVZzWpW/uR/vKhgYkDgYYABAAdxiddP/6oepinSsVwMWu4immDEFSViPPwkW0T7dkBoOMVyC6Hn8spNx1H7x3/CMDfqlCShAOdqkM1RL374m6+jAFfb3azDiXV4jPKjhKrbrlW02ekxghODHuJNMRG0oeFMsa25dCHMHRENXSmQZ7SrC4Di/+JJoLMZ2s/cSfpWSLSpA==";
-
-    /*
-     * Example JWT token for testing purposes.
-     * Data: sub: John@Doe42.com, iat: 1749126684, exp: 1749130284
-     */
-    static final String JWT_token = "eyJhbGciOiJFUzUxMiJ9.eyJzdWIiOiJKb2huQERvZTQyLmNvbSIsImlhdCI6MTc0OTEyNjY4NCwiZXhwIjoxNzQ5MTMwMjg0fQ.AGKvYR9zwwby9QUDYX-RtQj2a6NqulRXt6PcImlIfYHTn1thrS4CJqIJzvPsJVIIo6Ii8JIasJlyeAST2rM4x--yATp1wvX0i3QSD9ZGH0DLKKa68SZHnkO_0Q5zSQCC9cO5ecuzbTi1A-3TS8RQ3d54pZG3DiE3e2wnwDigthh_sSXk";
-
-    /*
-     * Example JWT refresh token for testing purposes.
-     * Data: { "isRefresh": true, "sub": "John@Doe42.com", "iat": 1749126684, "exp": 1749213084}
-     */
-    static final String JWT_refresh_token = "eyJhbGciOiJFUzUxMiJ9.eyJpc1JlZnJlc2giOnRydWUsInN1YiI6IkpvaG5ARG9lNDIuY29tIiwiaWF0IjoxNzQ5MTI2Njg0LCJleHAiOjE3NDkyMTMwODR9.AI2wUk5mNBZg0H0bKApXuuSUucInVQV5wI5ohFyhh32SpSM6qNwbpFen6ObQd_L8JvVHWqr7ydyms70-sa5BoAt2AbZTnfM-coGHF44KZsRGCHl9WvmY-q36W56vAmHwAlDbjfTpuRx2TCnDmeJ47BFfTzRmzr9u4-CePh28KNwog427";
-
-
-    /*
-    Token was generated with other key pair!
-     */
-    static final String JWT_token_invalid = "eyJhbGciOiJFUzUxMiJ9.eyJzdWIiOiJKb2huQERvZTQyLmNvbSIsImlhdCI6MTc0OTEzMDM3MiwiZXhwIjoxNzQ5MTMzOTcyfQ.AKYdq_TlHC-siSq6_wOy-j33qt8bGv9bXTMa1lfp2JuzqcCpmd9_ud6w4o1xUZHBpzgrmtDCG1janDs3Qs-EDwT_AFBBx7Ur6fBheNE0XmsrtyLa1Dm_iYA7hLRXPrmKr6s9utiMCKom1GkVmP-8c5DL_Jkz71fqfiRjWGbLLyjUM9so";
+    static final String JWT_TOKEN_INVALID = "eyJhbGciOiJFUzUxMiJ9.eyJzdWIiOiJKb2huQERvZTQyLmNvbSIsImlhdCI6MTc0OTEzMDM3MiwiZXhwIjoxNzQ5MTMzOTcyfQ.AKYdq_TlHC-siSq6_wOy-j33qt8bGv9bXTMa1lfp2JuzqcCpmd9_ud6w4o1xUZHBpzgrmtDCG1janDs3Qs-EDwT_AFBBx7Ur6fBheNE0XmsrtyLa1Dm_iYA7hLRXPrmKr6s9utiMCKom1GkVmP-8c5DL_Jkz71fqfiRjWGbLLyjUM9so";
 
     private UserRepository userRepository;
     private RefreshTokenRepository refreshTokenRepository;
@@ -85,33 +69,33 @@ class JwtServiceTest {
     @Test
     void extractUsername(){
         try {
-            String valid_token = createJwtToken(
+            String validToken = createJwtToken(
                     PKCS8_PRIVATE_KEY,
                     "John@Doe42.com",
                     System.currentTimeMillis() / 1000, // issued just now
                     System.currentTimeMillis() / 1000 + 60 * 60, // 1 hour expiration
                     Map.of() // oder Map.of("isRefresh", true) für Refresh-Token
             );
-            assertEquals("John@Doe42.com", jwtService.extractUsername(valid_token));
+            assertEquals("John@Doe42.com", jwtService.extractUsername(validToken));
 
 
-            String expired_token = createJwtToken(
+            String expiredToken = createJwtToken(
                     PKCS8_PRIVATE_KEY,
                     "John@Doe42.com",
                     System.currentTimeMillis() / 1000 - 1000, // issued 1000 seconds ago
                     System.currentTimeMillis() / 1000 - 100, // expired 100 seconds ago
                     Map.of()
             );
-            assertThrows(io.jsonwebtoken.ExpiredJwtException.class, () -> jwtService.extractUsername(expired_token));
+            assertThrows(io.jsonwebtoken.ExpiredJwtException.class, () -> jwtService.extractUsername(expiredToken));
 
-            String null_subj_token = createJwtToken(
+            String nullSubjToken = createJwtToken(
                     PKCS8_PRIVATE_KEY,
                     null,
                     System.currentTimeMillis() / 1000 - 1000, // issued 1000 seconds ago
                     System.currentTimeMillis() / 1000 - 100, // expired 100 seconds ago
                     Map.of()
             );
-            assertThrows(io.jsonwebtoken.ExpiredJwtException.class, () -> jwtService.extractUsername(null_subj_token));
+            assertThrows(io.jsonwebtoken.ExpiredJwtException.class, () -> jwtService.extractUsername(nullSubjToken));
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -138,7 +122,6 @@ class JwtServiceTest {
     void generateToken() throws Exception {
         // Arrange
         String subject = "John@Doe42.com";
-        long issuedAt = System.currentTimeMillis() / 1000;
         Map<String, Object> extraClaims =  Map.of("TestClaim", 42);
 
         // UserDetails-Mock
@@ -152,9 +135,8 @@ class JwtServiceTest {
 
         // Claims extrahieren und vergleichen
         var claimsService =
-                Objects.requireNonNull(verifyJwtToken(serviceToken))
-                        .parseSignedClaims(serviceToken)
-                        .getPayload();
+                Objects.requireNonNull(verifyJwtToken(serviceToken));
+
 
         assertEquals(subject, claimsService.getSubject());
         assertTrue(claimsService.getExpiration().getTime() > System.currentTimeMillis());
@@ -177,14 +159,12 @@ class JwtServiceTest {
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         // Claims extrahieren
-        var claims = Objects.requireNonNull(verifyJwtToken(refreshToken))
-                .parseSignedClaims(refreshToken)
-                .getPayload();
+        var claims = Objects.requireNonNull(verifyJwtToken(refreshToken));
 
         // Assert
         assertEquals(subject, claims.getSubject());
         assertTrue(claims.getExpiration().getTime() > System.currentTimeMillis() + 1000 * 60 * 60 * 12); // > 12 h
-        assertTrue(Boolean.TRUE.equals(claims.get("isRefresh")));
+        assertEquals(Boolean.TRUE, claims.get("isRefresh"));
 
         //check if refresh token is in database
         verify(userRepository).save(userCaptor.capture());
@@ -278,9 +258,7 @@ class JwtServiceTest {
         String token = jwtService.generateToken(userDetails);
 
         // Claims extrahieren
-        var claims = Objects.requireNonNull(verifyJwtToken(token))
-                .parseSignedClaims(token)
-                .getPayload();
+        var claims = Objects.requireNonNull(verifyJwtToken(token));
 
         // Assert
         assertEquals(subject, claims.getSubject());
@@ -340,7 +318,7 @@ class JwtServiceTest {
         assertFalse(jwtService.isLoginTokenValid(expiredToken, userDetails));
 
         // 5. Ungültiger Token (falscher Key signiert)
-        String invalidToken = JWT_token_invalid;
+        String invalidToken = JWT_TOKEN_INVALID;
         when(userRepository.findByEmail(subject)).thenReturn(Optional.of(user));
         assertThrows(io.jsonwebtoken.security.SignatureException.class, () -> jwtService.isLoginTokenValid(invalidToken, userDetails));
     }
@@ -361,22 +339,20 @@ class JwtServiceTest {
                 .compact();
     }
 
-    private static JwtParser verifyJwtToken(String token) throws Exception {
-
+    private static Claims verifyJwtToken(String token) throws Exception {
             try {
                 byte[] certBytes = Base64.getDecoder().decode(X508_PUBLIC_KEY);
                 CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
                 X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
-                PublicKey cert_key = certificate.getPublicKey();
+                PublicKey certKey = certificate.getPublicKey();
                 return Jwts.parser()
-                        .verifyWith(cert_key)
-                        .build();
+                        .verifyWith(certKey)
+                        .build()
+                        .parseSignedClaims(token)
+                        .getPayload();
             } catch (Exception e) {
                 return null;
             }
-
-
-
     }
 
 

@@ -2,6 +2,8 @@ package de.th_rosenheim.ro_co.restapi.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {
@@ -148,8 +150,10 @@ class UserTest {
         assertTrue(user.getRefreshTokens().contains(token2));
 
         // Unveränderliche Liste prüfen
-        assertThrows(UnsupportedOperationException.class, () -> user.getRefreshTokens().clear());
-    }
+        assertThrows(UnsupportedOperationException.class, () -> {
+            List<RefreshToken> tokens = user.getRefreshTokens();
+            tokens.clear();
+        });    }
 
 
     @Test

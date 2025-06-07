@@ -3,7 +3,6 @@ package de.th_rosenheim.ro_co.integration;
 import de.th_rosenheim.ro_co.restapi.model.Role;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import de.th_rosenheim.ro_co.restapi.security.AuthenticationProviderConfig;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -105,7 +104,7 @@ class AuthControllerIT {
 
             //Add username via direct DB access
             User user = new User("not@mail.com", "Test123456!", username, Role.USER.getRole());
-            User dbUser = userRepository.insert(user);
+            userRepository.insert(user);
 
             //test if username is not available anymore
             response = Unirest.get(baseUrl).asString();

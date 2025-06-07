@@ -6,6 +6,7 @@ import lombok.*;
 
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public class RegisterUserDto extends LoginUserDto{
     @NotNull
     @Size(min = 3, max = 255)

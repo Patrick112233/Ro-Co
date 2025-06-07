@@ -21,9 +21,6 @@ import java.util.Arrays;
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class AuthenticationConfig {
 
-    @Autowired
-    private Environment environment;
-
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthFilter jwtAuthFilter;
 
@@ -51,7 +48,7 @@ public class AuthenticationConfig {
  * @throws Exception if an error occurs during configuration
  */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, Environment environment) throws Exception {
 
         var filter = http
                 .requiresChannel(channel -> channel.anyRequest().requiresSecure())

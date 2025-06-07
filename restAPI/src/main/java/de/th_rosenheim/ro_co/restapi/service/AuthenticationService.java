@@ -8,12 +8,15 @@ import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import de.th_rosenheim.ro_co.restapi.model.Role;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
@@ -25,6 +28,7 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
 
     public AuthenticationService(
@@ -37,7 +41,7 @@ public class AuthenticationService {
         this.jwtService = jwtService;
     }
 
-    public Optional<OutUserDto> signup(@Valid RegisterUserDto input) throws NonUniqueException, IllegalArgumentException {
+    public Optional<OutUserDto> signup( RegisterUserDto input) throws NonUniqueException, IllegalArgumentException {
         User user = UserMapper.INSTANCE.registerUserDtotoUser(input);
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
@@ -58,7 +62,7 @@ public class AuthenticationService {
         return Optional.of(validationCheck(response));
     }
 
-    public Optional<LoginOutDto> authenticate(@Valid LoginUserDto input) throws AuthenticationException {
+    public Optional<LoginOutDto> authenticate( LoginUserDto input) throws AuthenticationException  {
 
         // Try to authenticate the user via email and password throws AuthenticationException if not successful
         authenticationManager.authenticate(
@@ -74,7 +78,13 @@ public class AuthenticationService {
             throw new UsernameNotFoundException("Invalid email or password");
         }
         String jwtToken = jwtService.generateToken(user.get());
-        String refreshToken = jwtService.generateRefreshToken(user.get());
+        String refreshToken = null;
+        try {
+            refreshToken = jwtService.generateRefreshToken(user.get());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e.getMessage());
+
+        }
 
         OutUserDto outUserDTO = UserMapper.INSTANCE.userToOutUserDto(user.get());
         LoginOutDto response = new LoginOutDto(outUserDTO);
@@ -103,11 +113,18 @@ public class AuthenticationService {
         }
 
         //check if the refresh token is still active
-        boolean is_active_token = user.get().getRefreshTokens().stream().anyMatch(refreshToken ->
-                hashToken(refreshTokenCandidate).equals(refreshToken.getTokenHash())
+        boolean isActiveToken = user.get().getRefreshTokens().stream().anyMatch(refreshToken ->
+                {
+                    try {
+                        return hashToken(refreshTokenCandidate).equals(refreshToken.getTokenHash());
+                    } catch (NoSuchAlgorithmException e) {
+                        logger.error(e.getMessage());
+                    }
+                    return false;
+                }
         );
 
-        if (!is_active_token) {
+        if (!isActiveToken) {
             throw new ExpiredJwtException(null, null, "Refresh token is not known to the server");
         }
 

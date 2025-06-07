@@ -2,28 +2,23 @@ package de.th_rosenheim.ro_co.restapi.service;
 
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ValidationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
-import java.util.Set;
+
+import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
 
 @Service
 public class MongoAuthUserDetailService implements UserDetailsService {
 
-    @Autowired
     private final UserRepository userRepository;
 
-    @Autowired
-    private jakarta.validation.Validator validator;
 
-    public MongoAuthUserDetailService(UserRepository userRepository, jakarta.validation.Validator validator) {
+    public MongoAuthUserDetailService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.validator = validator;
     }
 
     @Override
@@ -35,10 +30,10 @@ public class MongoAuthUserDetailService implements UserDetailsService {
         if (user.isEmpty()) {
             throw new UsernameNotFoundException(email);
         }
-
-        Set<ConstraintViolation<User>> violations = validator.validate(user.get());
-        if (!violations.isEmpty()) {
-            throw new UsernameNotFoundException(email);
+        try {
+            validationCheck(user.get());
+        } catch (ValidationException e) {
+            throw new UsernameNotFoundException("User validation failed for email: " + email);
         }
         return user.get();
     }

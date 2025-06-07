@@ -1,6 +1,5 @@
 package de.th_rosenheim.ro_co.restapi.mapper;
 
-import de.th_rosenheim.ro_co.restapi.dto.InUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.RegisterUserDto;
 import de.th_rosenheim.ro_co.restapi.model.User;

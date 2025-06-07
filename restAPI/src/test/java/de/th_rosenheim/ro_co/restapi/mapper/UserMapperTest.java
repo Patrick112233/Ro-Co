@@ -1,6 +1,5 @@
 package de.th_rosenheim.ro_co.restapi.mapper;
 
-import de.th_rosenheim.ro_co.restapi.dto.InUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.RegisterUserDto;
 import de.th_rosenheim.ro_co.restapi.model.Role;
@@ -58,9 +57,9 @@ class UserMapperTest {
         assertThrows(IllegalArgumentException.class, () -> mapper.registerUserDtotoUser(invalidDto));
 
         //check if PW is encrypted
-        RegisterUserDto PwDto = new RegisterUserDto("not@mail.com", "Clear1234!", "John Doe");
-        User Clear = mapper.registerUserDtotoUser(PwDto);
-        assertNotEquals("Clear1234!", Clear.getPassword());
+        RegisterUserDto pwDto = new RegisterUserDto("not@mail.com", "Clear1234!", "John Doe");
+        User clear = mapper.registerUserDtotoUser(pwDto);
+        assertNotEquals("Clear1234!", clear.getPassword());
 
     }
 

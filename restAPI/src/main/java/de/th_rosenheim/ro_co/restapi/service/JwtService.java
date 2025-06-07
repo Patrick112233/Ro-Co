@@ -26,7 +26,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +35,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class JwtService {
 
     public static final String BEARER_STRING = "Bearer ";
+    public static final String REFRESH_TOKEN_HEADER = "isRefresh";
 
 
     final Logger logger = LoggerFactory.getLogger(JwtService.class);
@@ -112,32 +112,30 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails, jwtExpiration);
     }
 
-    public String generateRefreshToken(UserDetails userDetails) {
-        String token = generateToken(Collections.singletonMap("isRefresh", true), userDetails, jwtRefreshExpiration);
+    public String generateRefreshToken(UserDetails userDetails) throws NoSuchAlgorithmException {
+        String token = generateToken(Collections.singletonMap(REFRESH_TOKEN_HEADER, true), userDetails, jwtRefreshExpiration);
 
         // Save the refresh token in the database for invalidation
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setTokenHash(hashToken(token));
 
         refreshTokenRepository.save(refreshToken);
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User E-Mail not found"));
         user.addRefreshToken(refreshToken);
         userRepository.save(user);
 
         return token;
     }
 
-    public static String hashToken(String token) {
+    public static String hashToken(String token) throws NoSuchAlgorithmException {
         if (token == null || token.isEmpty()) {
             throw new IllegalArgumentException("Token cannot be null or empty");
         }
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
-        }
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(hash);
+
     }
 
     /**
@@ -167,7 +165,7 @@ public class JwtService {
         try {
             final String username = extractUsername(token);
             final Claims claims = extractAllClaims(token);
-            boolean isRefresh = Optional.ofNullable(claims.get("isRefresh", Boolean.class)).orElse(false);
+            boolean isRefresh = Optional.ofNullable(claims.get(REFRESH_TOKEN_HEADER, Boolean.class)).orElse(false);
             User user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
             return (username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isVerified() && !isRefresh;
         }
@@ -180,15 +178,20 @@ public class JwtService {
         try{
             final String username = extractUsername(token);
             final Claims claims = extractAllClaims(token);
-            boolean isRefresh = claims.get("isRefresh", Boolean.class);
+            boolean isRefresh = claims.get(REFRESH_TOKEN_HEADER, Boolean.class);
             User user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
             if ((username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isVerified() && isRefresh){
                 return true;
             }
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             //delete refresh token from database
-            String token_hash = hashToken(token);
-            Optional<RefreshToken> refreshToken = refreshTokenRepository.findByTokenHash(token_hash);
+            Optional<RefreshToken> refreshToken = null;
+            try {
+                refreshToken = refreshTokenRepository.findByTokenHash(hashToken(token));
+            } catch (NoSuchAlgorithmException ex) {
+                logger.error(ex.getMessage());
+                return false;
+            }
             refreshToken.ifPresent(refreshTokenRepository::delete);
             return false;
         }
@@ -260,8 +263,7 @@ public class JwtService {
             byte[] certBytes = Base64.getDecoder().decode(publicKey);
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
             X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
-            PublicKey cert_key = certificate.getPublicKey();
-            return cert_key;
+            return certificate.getPublicKey();
         } catch (Exception e) {
             logger.error("Failed to parse public key: " + e.getMessage(), e);
             return null;

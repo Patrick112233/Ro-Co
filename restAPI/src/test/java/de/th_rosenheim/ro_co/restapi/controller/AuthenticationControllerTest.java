@@ -1,6 +1,5 @@
 package de.th_rosenheim.ro_co.restapi.controller;
 
-import de.th_rosenheim.ro_co.restapi.controller.AuthenticationController;
 import de.th_rosenheim.ro_co.restapi.dto.LoginOutDto;
 import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
@@ -15,17 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
@@ -41,13 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AuthenticationController.class)
 class AuthenticationControllerTest {
 
-    @MockBean
+    @MockitoBean
     private JwtService jwtService;
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AuthenticationService authenticationService;
 
     @Nested
@@ -69,7 +67,6 @@ class AuthenticationControllerTest {
     @WithMockUser(username = "BypassSSH", roles = {"USER"})
     void register() throws Exception {
         // 1. Erfolgreiche Registrierung
-        //RegisterUserDto registerUserDto = new RegisterUserDto("test@mail.com", "TestUser", "Test1234!");
         OutUserDto outUserDto = new OutUserDto("1", "TestUser", "USER", "test@mail.com", true);
 
         Mockito.when(authenticationService.signup(any(RegisterUserDto.class)))

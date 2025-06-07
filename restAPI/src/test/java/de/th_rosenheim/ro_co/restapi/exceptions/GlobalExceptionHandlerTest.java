@@ -1,6 +1,5 @@
 package de.th_rosenheim.ro_co.restapi.exceptions;
 
-import de.th_rosenheim.ro_co.restapi.dto.ErrorDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,7 +13,6 @@ import org.springframework.web.servlet.View;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = GlobalExceptionHandlerTest.TestController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -29,7 +27,7 @@ class GlobalExceptionHandlerTest {
 
         @Bean
         public GlobalExceptionHandler globalExceptionHandler(View error) {
-            return new GlobalExceptionHandler(error);
+            return new GlobalExceptionHandler();
         }
         @Bean
         public TestController testController() {

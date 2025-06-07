@@ -74,8 +74,7 @@ class LoginOutDtoTest {
         negativeTokenExpiresDto.setEmail("valid@mail.com");
         negativeTokenExpiresDto.setVerified(true);
 
-        Set<ConstraintViolation<LoginOutDto>> negativeTokenExpiresViolations = validator.validate(negativeTokenExpiresDto);
-        // Es gibt keine Bean Validation für negative Werte, außer du fügst z.B. @Min(0) hinzu
+        validator.validate(negativeTokenExpiresDto);
 
         // Negativer refreshExpiresIn
         LoginOutDto negativeRefreshExpiresDto = new LoginOutDto(
@@ -87,7 +86,6 @@ class LoginOutDtoTest {
         negativeRefreshExpiresDto.setEmail("valid@mail.com");
         negativeRefreshExpiresDto.setVerified(true);
 
-        Set<ConstraintViolation<LoginOutDto>> negativeRefreshExpiresViolations = validator.validate(negativeRefreshExpiresDto);
-        // Es gibt keine Bean Validation für negative Werte, außer du fügst z.B. @Min(0) hinzu
+        validator.validate(negativeRefreshExpiresDto);
     }
 }

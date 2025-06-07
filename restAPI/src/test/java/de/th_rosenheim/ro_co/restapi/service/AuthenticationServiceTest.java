@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.lang.reflect.Field;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import static de.th_rosenheim.ro_co.restapi.service.JwtService.hashToken;
@@ -106,7 +107,12 @@ class AuthenticationServiceTest {
         // 1. Normalfall
         when(userRepository.findByEmail(validEmail)).thenReturn(Optional.of(validUser));
         when(jwtService.generateToken(validUser)).thenReturn("jwtToken");
-        when(jwtService.generateRefreshToken(validUser)).thenReturn("refreshToken");
+        try {
+            when(jwtService.generateRefreshToken(validUser)).thenReturn("refreshToken");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
         // AuthenticationManager wirft keine Exception
         var result = authenticationService.authenticate(loginDto);
         assertTrue(result.isPresent());
@@ -139,9 +145,7 @@ class AuthenticationServiceTest {
             field = User.class.getDeclaredField("email");
             field.setAccessible(true);
             field.set(invalidUser, "not.valid.email");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
         invalidUser.setVerified(true);
@@ -216,9 +220,7 @@ class AuthenticationServiceTest {
             field = User.class.getDeclaredField("email");
             field.setAccessible(true);
             field.set(invalidUser, "not.valid.email");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
         invalidUser.setVerified(true);

@@ -46,7 +46,7 @@ public class User implements UserDetails {
     private boolean verified = false; //default is false, set to true after email verification
     private String role;
     @DocumentReference(lazy = true)
-    private List<RefreshToken> refreshTokens = new ArrayList<>(); //to small for hash list
+    private transient List<RefreshToken> refreshTokens = new ArrayList<>(); //to small for hash list
 
 
     public User(String email, String password,  String displayName, String role) {
@@ -126,7 +126,7 @@ public class User implements UserDetails {
         if (!password.matches(PASSWORD_PATTERN)) {
             throw new IllegalArgumentException("Password does not match the required pattern");
         }
-        this.encPassword = AuthenticationProviderConfig.passwordEncoder().encode(password);;
+        this.encPassword = AuthenticationProviderConfig.passwordEncoder().encode(password);
     }
 
     @Override

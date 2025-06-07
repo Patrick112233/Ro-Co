@@ -5,13 +5,13 @@ import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import de.th_rosenheim.ro_co.restapi.service.UserService;
-import jakarta.validation.Validation;
 import jakarta.validation.ValidationException;
-import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -25,14 +25,14 @@ import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
-
     private UserRepository repository;
     private UserService userService;
+
 
     @BeforeEach
     void setUp() {
         repository = mock(UserRepository.class);
-        userService = new UserService();
+        userService = new UserService(repository);
         // Feld per Reflection setzen, da @Autowired nicht greift
         java.lang.reflect.Field repoField;
         try {
@@ -79,15 +79,13 @@ class UserServiceTest {
             displayNameField.setAccessible(true);
             displayNameField.set(invalidUser, null);
 
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
         invalidUser.setVerified(false);
         when(repository.findById(validId)).thenReturn(Optional.of(invalidUser));
         // Da OutUserDto.email @NotNull ist, sollte eine Exception geworfen werden
-        assertThrows(ValidationException.class, () -> userService.getUser(validId).get());
+        assertThrows(ValidationException.class, () -> userService.getUser(validId));
     }
 
     @Test
@@ -127,9 +125,7 @@ class UserServiceTest {
             Field field = User.class.getDeclaredField("email");
             field.setAccessible(true);
             field.set(userInvalidEmail, "not.valid.email");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
 
@@ -153,9 +149,7 @@ class UserServiceTest {
             displayNameField.setAccessible(true);
             displayNameField.set(userWithNulls, null); // displayName ist null
 
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
 
@@ -171,9 +165,7 @@ class UserServiceTest {
             Field displayNameField = User.class.getDeclaredField("displayName");
             displayNameField.setAccessible(true);
             displayNameField.set(userWithNulls, "al"); // displayName ist null
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
 
@@ -184,7 +176,14 @@ class UserServiceTest {
 
         // User mit zu langem username
         String longName = "a".repeat(256);
-        User userLongName = new User("test@example.com", "Pw123456!", "longName","USER");
+        User userLongName = new User("test@example.com", "Pw123456!", "validName","USER");
+        try {
+            Field displayNameField = User.class.getDeclaredField("displayName");
+            displayNameField.setAccessible(true);
+            displayNameField.set(userWithNulls, longName); // displayName ist null
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
         userLongName.setVerified(true);
         when(repository.findAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(userLongName)));
@@ -194,8 +193,8 @@ class UserServiceTest {
         //teste leeres Ergebnis
         when(repository.findAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
-        Page<OutUserDto> empty_result = userService.getAllUsers(0, 10);
-        assertEquals((long) 0, empty_result.getTotalElements());
+        Page<OutUserDto> emptyResult = userService.getAllUsers(0, 10);
+        assertEquals((long) 0, emptyResult.getTotalElements());
 
     }
 
@@ -231,9 +230,7 @@ class UserServiceTest {
             field = User.class.getDeclaredField("email");
             field.setAccessible(true);
             field.set(invalidUser, "not.valid.email");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
         invalidUser.setId(validId);
