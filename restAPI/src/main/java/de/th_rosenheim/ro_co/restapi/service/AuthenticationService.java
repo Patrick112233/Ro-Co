@@ -7,7 +7,6 @@ import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import de.th_rosenheim.ro_co.restapi.model.Role;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;

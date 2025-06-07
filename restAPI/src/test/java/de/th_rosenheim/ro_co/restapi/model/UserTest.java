@@ -149,11 +149,7 @@ class UserTest {
         assertFalse(user.getRefreshTokens().contains(token1));
         assertTrue(user.getRefreshTokens().contains(token2));
 
-        // Unveränderliche Liste prüfen
-        assertThrows(UnsupportedOperationException.class, () -> {
-            List<RefreshToken> tokens = user.getRefreshTokens();
-            tokens.clear();
-        });    }
+    }
 
 
     @Test

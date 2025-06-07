@@ -5,7 +5,6 @@ import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.RefreshTokenRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

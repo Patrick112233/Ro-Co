@@ -185,7 +185,7 @@ public class JwtService {
             }
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             //delete refresh token from database
-            Optional<RefreshToken> refreshToken = null;
+            Optional<RefreshToken> refreshToken;
             try {
                 refreshToken = refreshTokenRepository.findByTokenHash(hashToken(token));
             } catch (NoSuchAlgorithmException ex) {
