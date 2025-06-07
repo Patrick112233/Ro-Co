@@ -32,6 +32,6 @@ CMD ["/bin/bash", "-c", "\
     ./TLSCertGenerator.sh && \
     export X508_PUBLIC_KEY=$(awk 'NR>1 && !/-----END CERTIFICATE-----/ {printf \"%s\", $$0}' certificate_x509.pem) && \
     export PKCS8_PRIVATE_KEY=$(awk 'NR>1 && !/-----END PRIVATE KEY-----/ {printf \"%s\", $$0}' private_pkcs8.pem) && \
-    echo 'Keys and certificates generated.' && \
-    java -jar /bin/roco/ro-co-0.0.1.jar \
-"]
+    echo 'Keys and certificates generated.'"]
+
+#java -jar /bin/roco/ro-co-0.0.1.jar

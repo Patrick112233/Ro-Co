@@ -59,7 +59,9 @@ class AuthControllerIT {
         registry.add("spring.data.mongodb.port", () -> port);
         registry.add("spring.data.mongodb.username", () -> MONGO_INITDB_ROOT_USERNAME);
         registry.add("spring.data.mongodb.password", () -> MONGO_INITDB_ROOT_PASSWORD);
-        registry.add("TLSPWD", () -> "123456");
+        registry.add("server.ssl.key-password", () -> "123456");
+        registry.add("server.ssl.key-store-password", () -> "123456");
+        registry.add("server.ssl.key-store", () -> "classpath:certs/RoCoTLS.p12");
     }
 
 
