@@ -28,8 +28,6 @@ public interface UserMapper {
     User registerUserDtotoUser(RegisterUserDto dto);
 
 
-    @Mapping(target = "displayName", source = "dto.username")
-    User inUserDtotoUser(InUserDto dto);
 
 
 }

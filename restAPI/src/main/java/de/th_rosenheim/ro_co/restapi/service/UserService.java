@@ -5,7 +5,7 @@ import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
 import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import de.th_rosenheim.ro_co.restapi.security.AuthenticationProviderConfiguration;
+import jakarta.validation.ValidationException;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +18,8 @@ import de.th_rosenheim.ro_co.restapi.model.User;
 
 import java.util.Optional;
 
+import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
+
 //https://www.bezkoder.com/spring-boot-mongodb-pagination/
 
 @Service
@@ -26,38 +28,46 @@ public class UserService {
     @Autowired
     private UserRepository repository;
 
-    public Optional<OutUserDto> getUser(String id) throws IllegalArgumentException {
+
+
+    public Optional<OutUserDto> getUser(String id) throws IllegalArgumentException, ValidationException {
         if (id == null || id.isEmpty()) {
             throw new IllegalArgumentException("ID cannot be null or empty");
         }
         Optional<User> user = repository.findById(id);
-        return user.map(UserMapper.INSTANCE::userToOutUserDto);
+
+        //validate DTO bevore
+        return user.map(u -> validationCheck(UserMapper.INSTANCE.userToOutUserDto(u)));
     }
 
-    public Page<OutUserDto> getAllUsers(int page, int size) throws IllegalArgumentException {
+    public Page<OutUserDto> getAllUsers(int page, int size) throws IllegalArgumentException, ValidationException {
         if (page < 0 || size < 1 || size > 100) {
             throw new IllegalArgumentException("Invalid page or size parameters.");
         }
         PageRequest pageRequest = PageRequest.of(page, size);
-        return repository.findAll(pageRequest).map(UserMapper.INSTANCE::userToOutUserDto);
+
+        return repository.findAll(pageRequest).map(user -> validationCheck(UserMapper.INSTANCE.userToOutUserDto(user)));
     }
 
     public OutUserDto updateUser(String id, InUserDto updatedUser)  throws IllegalArgumentException {
         if (id == null || !ObjectId.isValid(id)) {
             throw new IllegalArgumentException("ID is invalid");
         }
-        User inUser = UserMapper.INSTANCE.inUserDtotoUser(updatedUser);
-        inUser.setId(id); //force overwrite id
+        if (updatedUser == null) {
+            throw new IllegalArgumentException("Updated user data cannot be null");
+        }
 
         // Check if the user exists before saving
         Optional<User> existingUser = repository.findById(id);
         if (existingUser.isEmpty()) {
             throw new IllegalArgumentException("User with ID " + id + " does not exist");
         }
-        //ensure some values are not changed by api
+        //update properties
+        User newUser = existingUser.get();
+        newUser.setDisplayName(updatedUser.getUsername());
 
-
-        User dbUser = repository.save(inUser); //either creates or updates user
+        validationCheck(newUser);
+        User dbUser = repository.save(newUser); //either creates or updates user
         return UserMapper.INSTANCE.userToOutUserDto(dbUser);
     }
 
@@ -68,12 +78,15 @@ public class UserService {
         repository.deleteById(id);
     }
 
-    public void resetPassword(LoginUserDto loginUserDto) {
-        Optional<User> user = repository.findByEmail(loginUserDto.getEmail());
+    public void resetPassword(String id,  LoginUserDto loginUserDto) {
+        Optional<User> user = repository.findById(id);
         if (user.isEmpty()) {
             throw new UsernameNotFoundException("User with email " + loginUserDto.getEmail() + " not found");
         }
-        user.get().setPassword(AuthenticationProviderConfiguration.passwordEncoder().encode(loginUserDto.getPassword()));
+        user.get().setPassword(loginUserDto.getPassword());
         repository.save(user.get());
     }
+
+
+
 }

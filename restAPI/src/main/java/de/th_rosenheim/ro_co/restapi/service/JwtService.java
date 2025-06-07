@@ -19,8 +19,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureAlgorithm;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -67,7 +70,7 @@ public class JwtService {
      * @param <T> the type of the claim to be resolved
      * @return the resolved claim
      */
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -125,6 +128,9 @@ public class JwtService {
     }
 
     public static String hashToken(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("Token cannot be null or empty");
+        }
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
@@ -158,28 +164,35 @@ public class JwtService {
     }
 
     public boolean isLoginTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        final Claims claims = extractAllClaims(token);
-        boolean isRefresh = Optional.ofNullable(claims.get("isRefresh", Boolean.class)).orElse(false);
-        Optional<User> user = userRepository.findByEmail(username);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isPresent() && user.get().isVerified() && !isRefresh;
+        try {
+            final String username = extractUsername(token);
+            final Claims claims = extractAllClaims(token);
+            boolean isRefresh = Optional.ofNullable(claims.get("isRefresh", Boolean.class)).orElse(false);
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isVerified() && !isRefresh;
+        }
+        catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return false;
+        }
     }
 
     public boolean isRefreshTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        final Claims claims = extractAllClaims(token);
-        boolean isRefresh = claims.get("isRefresh", Boolean.class);
-        Optional<User> user = userRepository.findByEmail(username);
-        if ((username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isPresent() && user.get().isVerified() && isRefresh){
-            return true;
-        }else{
+        try{
+            final String username = extractUsername(token);
+            final Claims claims = extractAllClaims(token);
+            boolean isRefresh = claims.get("isRefresh", Boolean.class);
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            if ((username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isVerified() && isRefresh){
+                return true;
+            }
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
             //delete refresh token from database
             String token_hash = hashToken(token);
             Optional<RefreshToken> refreshToken = refreshTokenRepository.findByTokenHash(token_hash);
             refreshToken.ifPresent(refreshTokenRepository::delete);
             return false;
         }
-        
+        return false;
     }
 
     /**
@@ -206,7 +219,13 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        Date expiration;
+        try{
+            expiration = extractExpiration(token);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return true;
+        }
+        return !(new Date(System.currentTimeMillis())).before(expiration);
     }
 
     private Date extractExpiration(String token) {
@@ -236,13 +255,15 @@ public class JwtService {
 
 
     private PublicKey getVerificationKey() {
+
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance("EC");
-            byte[] keyBytes = Base64.getDecoder().decode(publicKey);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-            return keyFactory.generatePublic(keySpec);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
-            logger.error(e.getMessage());
+            byte[] certBytes = Base64.getDecoder().decode(publicKey);
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
+            PublicKey cert_key = certificate.getPublicKey();
+            return cert_key;
+        } catch (Exception e) {
+            logger.error("Failed to parse public key: " + e.getMessage(), e);
             return null;
         }
     }

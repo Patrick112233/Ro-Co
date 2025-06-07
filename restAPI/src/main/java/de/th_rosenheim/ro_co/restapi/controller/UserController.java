@@ -52,7 +52,7 @@ public class UserController {
     @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
     @PutMapping("/{id}/password")
     public ResponseEntity<Object> resetPassword(@PathVariable String id, @Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
-        this.userService.resetPassword(loginUserDto);
+        this.userService.resetPassword(id, loginUserDto);
         return ResponseEntity.ok().build();
     }
 
@@ -71,10 +71,6 @@ public class UserController {
         this.userService.deleteUser(id);
         return ResponseEntity.ok().build();
     }
-
-
-
-
 
     @ExceptionHandler({
             UsernameNotFoundException.class

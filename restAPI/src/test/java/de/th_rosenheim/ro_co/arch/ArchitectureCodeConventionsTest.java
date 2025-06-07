@@ -1,4 +1,4 @@
-package de.th_rosenheim.ro_co.restapi.arch;
+package de.th_rosenheim.ro_co.arch;
 
 
 import com.tngtech.archunit.core.importer.ImportOption;

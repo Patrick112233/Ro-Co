@@ -1,9 +1,9 @@
-package de.th_rosenheim.ro_co.restapi.integration;
+package de.th_rosenheim.ro_co.integration;
 
 import de.th_rosenheim.ro_co.restapi.model.Role;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import de.th_rosenheim.ro_co.restapi.security.AuthenticationProviderConfiguration;
+import de.th_rosenheim.ro_co.restapi.security.AuthenticationProviderConfig;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -29,9 +29,12 @@ import org.testcontainers.utility.MountableFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
-@ActiveProfiles("test")
+@ActiveProfiles("IntTest")
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = de.th_rosenheim.ro_co.restapi.RoCoRest.class
+)
 class AuthControllerIT {
 
     static final String MONGO_INITDB_ROOT_USERNAME = "deinUser";
@@ -43,7 +46,7 @@ class AuthControllerIT {
             .withEnv("MONGO_INITDB_ROOT_USERNAME", MONGO_INITDB_ROOT_USERNAME) // Passe an, falls in env_file gesetzt
             .withEnv("MONGO_INITDB_ROOT_PASSWORD", MONGO_INITDB_ROOT_PASSWORD) // Passe an, falls in env_file gesetzt
             .withCopyFileToContainer(
-                    MountableFile.forHostPath("mongo-init.js"),
+                    MountableFile.forClasspathResource("mongo-init.js"),
                     "/docker-entrypoint-initdb.d/mongo-init.js"
             )
             .waitingFor(org.testcontainers.containers.wait.strategy.Wait.forLogMessage(".*MongoDB init process complete.*", 1));
@@ -99,8 +102,7 @@ class AuthControllerIT {
             assertEquals(200, response.getStatus());
 
             //Add username via direct DB access
-            User user = new User("not@mail.com", AuthenticationProviderConfiguration.passwordEncoder().encode("test1234!"), Role.USER.getRole());
-            user.setDisplayName(username);
+            User user = new User("not@mail.com", "Test123456!", username, Role.USER.getRole());
             User dbUser = userRepository.insert(user);
 
             //test if username is not available anymore

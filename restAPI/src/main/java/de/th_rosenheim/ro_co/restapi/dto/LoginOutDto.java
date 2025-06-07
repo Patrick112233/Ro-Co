@@ -1,5 +1,6 @@
 package de.th_rosenheim.ro_co.restapi.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -7,9 +8,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginOutDto extends OutUserDto {
+    @NotNull
     private String token;
+    @NotNull
     private String refreshToken;
+    @NotNull
     private long tokenExpiresIn;
+    @NotNull
     private long refreshExpiresIn;
 
 
