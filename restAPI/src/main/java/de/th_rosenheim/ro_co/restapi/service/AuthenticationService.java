@@ -1,21 +1,25 @@
 package de.th_rosenheim.ro_co.restapi.service;
 
 import de.th_rosenheim.ro_co.restapi.exceptions.NonUniqueException;
-import de.th_rosenheim.ro_co.restapi.security.AuthenticationProviderConfiguration;
+import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
 import de.th_rosenheim.ro_co.restapi.dto.*;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import de.th_rosenheim.ro_co.restapi.security.JwtService;
-import de.th_rosenheim.ro_co.restapi.security.Role;
+import de.th_rosenheim.ro_co.restapi.model.Role;
+import io.jsonwebtoken.ExpiredJwtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
-import static de.th_rosenheim.ro_co.restapi.security.JwtService.hashToken;
+import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
+import static de.th_rosenheim.ro_co.restapi.service.JwtService.hashToken;
 
 @Service
 public class AuthenticationService {
@@ -23,9 +27,8 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
-private static final String EMAIL_REGEX = "^((?!\\.)[\\w\\-_.]*[^.])(@\\w+)(\\.\\w+(\\.\\w+)?[^.\\W])$";
-private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$";
 
     public AuthenticationService(
             UserRepository userRepository,
@@ -37,36 +40,28 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
         this.jwtService = jwtService;
     }
 
-    public Optional<OutUserDto> signup(RegisterUserDto input) throws NonUniqueException, IllegalArgumentException {
+    public Optional<OutUserDto> signup( RegisterUserDto input) throws NonUniqueException, IllegalArgumentException {
         User user = UserMapper.INSTANCE.registerUserDtotoUser(input);
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new NonUniqueException("Email already exists");
         }
 
-        //check if valide email format
-        if (!user.getEmail().matches(EMAIL_REGEX)) {
-            throw new IllegalArgumentException("Invalid email format");
-        }
-
-        //check password strenght
-        if (!user.getPassword().matches(PWD_REGEX)) {
-            throw new IllegalArgumentException("Password must be 8 to 24 characters long, include uppercase and lowercase letters, a number, and a special character (!, @, #, $, %).");
-        }
-
         user.setRole(Role.USER);
         user.setVerified(true); // default is false, set to true after email verification
-        user.setPassword(AuthenticationProviderConfiguration.passwordEncoder().encode(input.getPassword()));
+        user.setEncPassword(input.getPassword());
+        validationCheck(user);
+
         User dbUser = userRepository.insert(user);
 
         OutUserDto response = UserMapper.INSTANCE.userToOutUserDto(user);
         response.setId(dbUser.getId());
         response.setVerified(true); // not jet implemented
 
-        return Optional.of(response);
+        return Optional.of(validationCheck(response));
     }
 
-    public Optional<LoginOutDto> authenticate(LoginUserDto input) throws AuthenticationException {
+    public Optional<LoginOutDto> authenticate( LoginUserDto input) throws AuthenticationException  {
 
         // Try to authenticate the user via email and password throws AuthenticationException if not successful
         authenticationManager.authenticate(
@@ -82,7 +77,13 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
             throw new UsernameNotFoundException("Invalid email or password");
         }
         String jwtToken = jwtService.generateToken(user.get());
-        String refreshToken = jwtService.generateRefreshToken(user.get());
+        String refreshToken = null;
+        try {
+            refreshToken = jwtService.generateRefreshToken(user.get());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e.getMessage());
+
+        }
 
         OutUserDto outUserDTO = UserMapper.INSTANCE.userToOutUserDto(user.get());
         LoginOutDto response = new LoginOutDto(outUserDTO);
@@ -90,13 +91,13 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
         response.setToken(jwtToken);
         response.setTokenExpiresIn(jwtService.getTokenExpirationTime());
         response.setRefreshExpiresIn(jwtService.getRefreshTokenExpirationTime());
-        return Optional.of(response);
+        return Optional.of(validationCheck(response));
     }
 
     public Optional<LoginOutDto> refresh(String authHeader) throws UsernameNotFoundException {
 
         if (!jwtService.isBearer(authHeader)) {
-            return Optional.empty();
+            throw new IllegalArgumentException("Invalid Authorization header format");
         }
         //extract auth information from token
         String refreshTokenCandidate = jwtService.extractToken(authHeader);
@@ -107,16 +108,23 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
         }
 
         if (!jwtService.isRefreshTokenValid(refreshTokenCandidate, user.get())) {
-            return Optional.empty();
+            throw new IllegalArgumentException("Invalid refresh token");
         }
 
         //check if the refresh token is still active
-        boolean is_active_token = user.get().getRefreshTokens().stream().anyMatch(refreshToken ->
-                hashToken(refreshTokenCandidate).equals(refreshToken.getTokenHash())
+        boolean isActiveToken = user.get().getRefreshTokens().stream().anyMatch(refreshToken ->
+                {
+                    try {
+                        return hashToken(refreshTokenCandidate).equals(refreshToken.getTokenHash());
+                    } catch (NoSuchAlgorithmException e) {
+                        logger.error(e.getMessage());
+                    }
+                    return false;
+                }
         );
 
-        if (!is_active_token) {
-            return Optional.empty();
+        if (!isActiveToken) {
+            throw new ExpiredJwtException(null, null, "Refresh token is not known to the server");
         }
 
         String jwtToken = jwtService.generateToken(user.get());
@@ -128,7 +136,7 @@ private static final String PWD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*
         response.setRefreshToken(refreshTokenCandidate);
         response.setRefreshExpiresIn(jwtService.getRefreshTokenExpirationTime());
         response.setTokenExpiresIn(jwtService.getTokenExpirationTime());
-        return Optional.of(response);
+        return Optional.of(validationCheck(response));
     }
 
     public boolean isDisplayNameAvailable(String displayName) {

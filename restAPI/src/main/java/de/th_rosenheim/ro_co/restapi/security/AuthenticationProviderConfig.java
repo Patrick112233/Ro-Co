@@ -11,11 +11,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
-public class AuthenticationProviderConfiguration {
+public class AuthenticationProviderConfig {
 
     private final UserDetailsService userDetailsService;
 
-    AuthenticationProviderConfiguration(UserDetailsService userDetailsService) {
+    AuthenticationProviderConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 

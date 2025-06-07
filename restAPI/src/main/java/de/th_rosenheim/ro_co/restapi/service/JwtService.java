@@ -5,7 +5,7 @@
  * @See {@link https://medium.com/@tericcabrel/implement-jwt-authentication-in-a-spring-boot-3-application-5839e4fd8fac}
  */
 
-package de.th_rosenheim.ro_co.restapi.security;
+package de.th_rosenheim.ro_co.restapi.service;
 
 import de.th_rosenheim.ro_co.restapi.model.RefreshToken;
 import de.th_rosenheim.ro_co.restapi.model.User;
@@ -19,11 +19,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureAlgorithm;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +35,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class JwtService {
 
     public static final String BEARER_STRING = "Bearer ";
+    public static final String REFRESH_TOKEN_HEADER = "isRefresh";
 
 
     final Logger logger = LoggerFactory.getLogger(JwtService.class);
@@ -67,7 +70,7 @@ public class JwtService {
      * @param <T> the type of the claim to be resolved
      * @return the resolved claim
      */
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -109,29 +112,30 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails, jwtExpiration);
     }
 
-    public String generateRefreshToken(UserDetails userDetails) {
-        String token = generateToken(Collections.singletonMap("isRefresh", true), userDetails, jwtRefreshExpiration);
+    public String generateRefreshToken(UserDetails userDetails) throws NoSuchAlgorithmException {
+        String token = generateToken(Collections.singletonMap(REFRESH_TOKEN_HEADER, true), userDetails, jwtRefreshExpiration);
 
         // Save the refresh token in the database for invalidation
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setTokenHash(hashToken(token));
 
         refreshTokenRepository.save(refreshToken);
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User E-Mail not found"));
         user.addRefreshToken(refreshToken);
         userRepository.save(user);
 
         return token;
     }
 
-    public static String hashToken(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
+    public static String hashToken(String token) throws NoSuchAlgorithmException {
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("Token cannot be null or empty");
         }
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(hash);
+
     }
 
     /**
@@ -158,28 +162,40 @@ public class JwtService {
     }
 
     public boolean isLoginTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        final Claims claims = extractAllClaims(token);
-        boolean isRefresh = Optional.ofNullable(claims.get("isRefresh", Boolean.class)).orElse(false);
-        Optional<User> user = userRepository.findByEmail(username);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isPresent() && user.get().isVerified() && !isRefresh;
+        try {
+            final String username = extractUsername(token);
+            final Claims claims = extractAllClaims(token);
+            boolean isRefresh = Optional.ofNullable(claims.get(REFRESH_TOKEN_HEADER, Boolean.class)).orElse(false);
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isVerified() && !isRefresh;
+        }
+        catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return false;
+        }
     }
 
     public boolean isRefreshTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        final Claims claims = extractAllClaims(token);
-        boolean isRefresh = claims.get("isRefresh", Boolean.class);
-        Optional<User> user = userRepository.findByEmail(username);
-        if ((username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isPresent() && user.get().isVerified() && isRefresh){
-            return true;
-        }else{
+        try{
+            final String username = extractUsername(token);
+            final Claims claims = extractAllClaims(token);
+            boolean isRefresh = claims.get(REFRESH_TOKEN_HEADER, Boolean.class);
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            if ((username.equals(userDetails.getUsername())) && !isTokenExpired(token) && user.isVerified() && isRefresh){
+                return true;
+            }
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
             //delete refresh token from database
-            String token_hash = hashToken(token);
-            Optional<RefreshToken> refreshToken = refreshTokenRepository.findByTokenHash(token_hash);
+            Optional<RefreshToken> refreshToken;
+            try {
+                refreshToken = refreshTokenRepository.findByTokenHash(hashToken(token));
+            } catch (NoSuchAlgorithmException ex) {
+                logger.error(ex.getMessage());
+                return false;
+            }
             refreshToken.ifPresent(refreshTokenRepository::delete);
             return false;
         }
-        
+        return false;
     }
 
     /**
@@ -194,7 +210,11 @@ public class JwtService {
             UserDetails userDetails,
             long expiration
     ) {
-        PrivateKey key = getSignInKey();
+        Optional<PrivateKey> optionalKey = getSignInKey();
+        if (optionalKey.isEmpty()) {
+            throw new IllegalStateException("Signing key could not be retrieved");
+        }
+        PrivateKey key = optionalKey.get();
         return Jwts.
                     builder()
                     .claims(extraClaims)
@@ -206,7 +226,13 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        Date expiration;
+        try{
+            expiration = extractExpiration(token);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return true;
+        }
+        return !(new Date(System.currentTimeMillis())).before(expiration);
     }
 
     private Date extractExpiration(String token) {
@@ -222,27 +248,28 @@ public class JwtService {
                 .getPayload();
     }
 
-    private PrivateKey getSignInKey() {
+    private Optional<PrivateKey> getSignInKey() {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             byte[] keyBytes = Base64.getDecoder().decode(secretKey);
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-            return keyFactory.generatePrivate(keySpec);
+            return Optional.ofNullable(keyFactory.generatePrivate(keySpec));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
             logger.error(e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 
 
     private PublicKey getVerificationKey() {
+
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance("EC");
-            byte[] keyBytes = Base64.getDecoder().decode(publicKey);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-            return keyFactory.generatePublic(keySpec);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
-            logger.error(e.getMessage());
+            byte[] certBytes = Base64.getDecoder().decode(publicKey);
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
+            return certificate.getPublicKey();
+        } catch (Exception e) {
+            logger.error("Failed to parse public key: " + e.getMessage(), e);
             return null;
         }
     }

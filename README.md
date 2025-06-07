@@ -26,3 +26,11 @@ The following guides illustrate how to use some features concretely:
 * [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
 * [Creating CRUD UI with Vaadin](https://spring.io/guides/gs/crud-with-vaadin/)
 * [Accessing Data with MongoDB](https://spring.io/guides/gs/accessing-data-mongodb/)
+
+
+
+# Test Concept:
+Unit tests with Mockito: https://site.mockito.org/
+Integration test with testcontainers: https://testcontainers.com/
+Archunit: https://www.archunit.org/
+

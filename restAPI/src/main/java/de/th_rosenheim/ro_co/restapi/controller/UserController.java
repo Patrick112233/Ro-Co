@@ -1,6 +1,6 @@
 package de.th_rosenheim.ro_co.restapi.controller;
 
-import de.th_rosenheim.ro_co.restapi.dto.ErrorDTO;
+import de.th_rosenheim.ro_co.restapi.dto.ErrorDto;
 import de.th_rosenheim.ro_co.restapi.dto.InUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
@@ -33,7 +33,7 @@ public class UserController {
 
     @Operation(summary = "Get user by ID", description = "Retrieve the details of a user by their unique ID.")
     @GetMapping("/{id}")
-    public ResponseEntity<OutUserDto> getUser(@Valid @PathVariable String id) {
+    public ResponseEntity<OutUserDto> getUser(@PathVariable String id) {
         Optional<OutUserDto> user = userService.getUser(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -49,9 +49,10 @@ public class UserController {
         return ResponseEntity.created(uri).body(outUserDTO);
     }
 
+    @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
     @PutMapping("/{id}/password")
     public ResponseEntity<Object> resetPassword(@PathVariable String id, @Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
-        this.userService.resetPassword(loginUserDto);
+        this.userService.resetPassword(id, loginUserDto);
         return ResponseEntity.ok().build();
     }
 
@@ -71,15 +72,11 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-
-
-
-
     @ExceptionHandler({
             UsernameNotFoundException.class
     })
     public ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        ErrorDTO error = new ErrorDTO("The credentials entered are incorrect or the account has been disabled.");
+        ErrorDto error = new ErrorDto("The credentials entered are incorrect or the account has been disabled.");
         return ResponseEntity.badRequest().body(error);
     }
 
@@ -89,7 +86,7 @@ public class UserController {
         org.springframework.web.bind.MethodArgumentNotValidException.class
     })
     public ResponseEntity<Object> handleValidationExceptions(Exception ex) {
-        ErrorDTO error = new ErrorDTO("The request body is not readable or is missing required fields or invalid inputs.");
+        ErrorDto error = new ErrorDto("The request body is not readable or is missing required fields or invalid inputs.");
         return ResponseEntity.badRequest().body(error);
     }
 

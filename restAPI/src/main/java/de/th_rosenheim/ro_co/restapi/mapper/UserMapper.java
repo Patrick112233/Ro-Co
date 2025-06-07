@@ -1,5 +1,7 @@
-package de.th_rosenheim.ro_co.restapi.dto;
+package de.th_rosenheim.ro_co.restapi.mapper;
 
+import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
+import de.th_rosenheim.ro_co.restapi.dto.RegisterUserDto;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,8 +27,6 @@ public interface UserMapper {
     User registerUserDtotoUser(RegisterUserDto dto);
 
 
-    @Mapping(target = "displayName", source = "dto.username")
-    User inUserDtotoUser(InUserDto dto);
 
 
 }
