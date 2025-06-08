@@ -12,10 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,7 @@ import java.util.Optional;
 @RestController
 public class UserController {
 
-    private final UserService userService;
+    private UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -38,6 +40,34 @@ public class UserController {
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Gets the current user icon", description = "Register a new user by providing user details as JSON.")
+    @GetMapping("/{id}/icon")
+    public ResponseEntity<byte[]> getUserIcon(@PathVariable String id) {
+        byte[] imageData = null;
+        try {
+            imageData = userService.getUserIcon(id);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/svg+xml")
+                .body(imageData);
+    }
+
+
+    @Operation(summary = "Generate new user Icon", description = "Generates a new user icon")
+    @PutMapping("/{id}/icon")
+    public ResponseEntity<byte[]> resetUserIcon() throws IOException, UsernameNotFoundException {
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
+        byte[] imageData = userService.generateUserIcon(userMail);
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/svg+xml")
+                .body(imageData);
+    }
+
+
+
+    //@TODO: instead of using ID spring security username should be used to only allow users to update their own data
     @Operation(summary = "Update user by ID", description = "Update an existing user's details using their unique ID.")
     @PutMapping("/{id}")
     public ResponseEntity<OutUserDto> updateUser(@PathVariable String id, @Valid @RequestBody InUserDto updatedUser){
@@ -49,6 +79,7 @@ public class UserController {
         return ResponseEntity.created(uri).body(outUserDTO);
     }
 
+    //@TODO: instead of using ID spring security username should be used to only allow users to update their own data
     @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
     @PutMapping("/{id}/password")
     public ResponseEntity<Object> resetPassword(@PathVariable String id, @Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {

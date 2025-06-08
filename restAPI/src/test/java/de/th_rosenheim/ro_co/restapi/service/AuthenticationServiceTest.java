@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
+import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static de.th_rosenheim.ro_co.restapi.service.JwtService.hashToken;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,7 +66,7 @@ class AuthenticationServiceTest {
         // 1. Normalfall
         var dto = new RegisterUserDto("test@example.com", "Pw123456!!", "TestUser");
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
-        var user = new User("test@example.com", "Pw123456!!", "myName","USER");
+        var user = instantiateUser("test@example.com", "Pw123456!!", "myName","USER");
         user.setId("507f1f77bcf86cd799439011");
         when(userRepository.insert((de.th_rosenheim.ro_co.restapi.model.User) any())).thenReturn(user);
 
@@ -99,7 +100,7 @@ class AuthenticationServiceTest {
         // Gemeinsame Testdaten
         var validEmail = "test@example.com";
         var validPassword = "Pw123456!!";
-        var validUser = new User(validEmail, validPassword, "TestUser","USER");
+        var validUser = instantiateUser(validEmail, validPassword, "TestUser","USER");
         validUser.setVerified(true);
         validUser.setId("507f1f77bcf86cd799439011");
         var loginDto = new LoginUserDto(validEmail, validPassword);
@@ -131,14 +132,14 @@ class AuthenticationServiceTest {
         assertThrows(UsernameNotFoundException.class, () -> authenticationService.authenticate(loginDto));
 
         // 4. User nicht verifiziert
-        var notVerifiedUser = new User(validEmail, validPassword, "TestUser2","USER");
+        var notVerifiedUser = instantiateUser(validEmail, validPassword, "TestUser2","USER");
         notVerifiedUser.setVerified(false);
         var loginDtoNotVerified = new LoginUserDto(validEmail, validPassword);
         when(userRepository.findByEmail(validEmail)).thenReturn(Optional.of(notVerifiedUser));
         assertThrows(UsernameNotFoundException.class, () -> authenticationService.authenticate(loginDtoNotVerified));
 
         // 5. Invalides User-Objekt aus Datenbank (z.B. null-Felder)
-        var invalidUser = new User("Not@mail.com", "Pw123456!", "myName","USER");
+        var invalidUser = instantiateUser("Not@mail.com", "Pw123456!", "myName","USER");
         //set via reflection userer id = null
         Field field = null;
         try {
@@ -166,11 +167,11 @@ class AuthenticationServiceTest {
         String validEmail = "test@example.com";
         String refreshToken = "refreshToken";
         String bearerHeader = "Bearer " + refreshToken;
-        User user = new User(validEmail, "Pw123456!!", "TestUser","USER");
+        User user = instantiateUser(validEmail, "Pw123456!!", "TestUser","USER");
         user.setId("507f1f77bcf86cd799439011");
         user.setVerified(true);
         user.setRole("USER");
-        user.setEncPassword("Pw123456!!");
+        user.setPassword("Pw123456!!");
 
         // 1. DB hat keinen kentniss von den refresh token!
         when(jwtService.isBearer(bearerHeader)).thenReturn(true);
@@ -214,7 +215,7 @@ class AuthenticationServiceTest {
         assertThrows(IllegalArgumentException.class, () -> authenticationService.refresh(bearerHeader));
 
         // 6. Invalides User-Objekt (z.B. null-Felder)
-        var invalidUser = new User("Not@mail.com", "Pw123456!", "myName","USER");
+        var invalidUser = instantiateUser("Not@mail.com", "Pw123456!", "myName","USER");
         Field field = null;
         try {
             field = User.class.getDeclaredField("email");

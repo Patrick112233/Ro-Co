@@ -26,6 +26,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
@@ -114,10 +115,12 @@ public class JwtService {
 
     public String generateRefreshToken(UserDetails userDetails) throws NoSuchAlgorithmException {
         String token = generateToken(Collections.singletonMap(REFRESH_TOKEN_HEADER, true), userDetails, jwtRefreshExpiration);
+        Date expires = extractClaim(token, Claims::getExpiration);
 
         // Save the refresh token in the database for invalidation
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setTokenHash(hashToken(token));
+        refreshToken.setTokenExpires(expires);
 
         refreshTokenRepository.save(refreshToken);
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User E-Mail not found"));

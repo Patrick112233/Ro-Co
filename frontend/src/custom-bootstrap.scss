@@ -38,7 +38,9 @@ $navbar-dark-hover-color: $white;
 $pagination-disabled-color: $gray-300;
 $pagination-hover-bg: $gray-300;
 
-@use '../node_modules/bootstrap/scss/bootstrap' as bootstrap;
+@import '../node_modules/bootstrap/scss/bootstrap.scss';
+
+
 
 .body{
     margin-bottom: 70px !important;

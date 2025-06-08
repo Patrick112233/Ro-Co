@@ -25,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
@@ -103,7 +104,7 @@ class AuthControllerIT {
             assertEquals(200, response.getStatus());
 
             //Add username via direct DB access
-            User user = new User("not@mail.com", "Test123456!", username, Role.USER.getRole());
+            User user = instantiateUser("not@mail.com", "Test123456!", username, Role.USER.getRole());
             userRepository.insert(user);
 
             //test if username is not available anymore

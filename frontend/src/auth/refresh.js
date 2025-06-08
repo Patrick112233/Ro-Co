@@ -1,9 +1,14 @@
 import createRefresh from 'react-auth-kit/createRefresh';
-import axios from '../api/axios.js'
+import axios from '../util/axios.js'
 
+function getRefresh() {
+    var b = document.cookie.match("(^|;)\\s*" + "_auth_refresh" + "\\s*=\\s*([^;]+)");
+    return b ? b.pop() : "";
+}
+export { getRefresh };
 
 const refresh = createRefresh({
-    interval: 10, //in seconds
+    interval: 600, //in seconds
     refreshApiCallback: async (param) => {
         try {
             const response = await axios.post("auth/refresh", param, {

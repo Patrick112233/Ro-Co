@@ -22,13 +22,8 @@ const store = createStore({
     cookieSecure: true,
     refresh: refresh
 });
-/*
-const store = createStore({
-    authName:'_auth',
-    authType:'cookie',
-    cookieDomain: window.location.hostname,
-    cookieSecure: true
-})*/
+
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

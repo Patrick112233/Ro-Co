@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 
+import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -154,7 +155,7 @@ class JwtServiceTest {
 
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        when(userRepository.findByEmail(subject)).thenReturn(Optional.of(new User("John@Doe42.com", "Pw123456!", "myName","USER")));
+        when(userRepository.findByEmail(subject)).thenReturn(Optional.of(instantiateUser("John@Doe42.com", "Pw123456!", "myName","USER")));
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         // Claims extrahieren
@@ -178,9 +179,9 @@ class JwtServiceTest {
     @Test
     void isRefreshTokenValid() throws Exception {
         String subject = "John@Doe42.com";
-        User user = new User(subject, "Pw123456!", "John Doe","USER");
+        User user = instantiateUser(subject, "Pw123456!", "John Doe","USER");
         user.setRole("USER");
-        user.setEncPassword("Pw123456!");
+        user.setPassword("Pw123456!");
         user.setRole("USER");
 
         // 1. Normalfall: Gültiger Refresh-Token, User existiert, verified, Token nicht abgelaufen
@@ -268,8 +269,8 @@ class JwtServiceTest {
     @Test
     void isLoginTokenValid() throws Exception {
         String subject = "John@Doe42.com";
-        User user = new User(subject, "Pw123456!", "John Doe","USER");
-        user.setEncPassword("Pw123456!");
+        User user = instantiateUser(subject, "Pw123456!", "John Doe","USER");
+        user.setPassword("Pw123456!");
         user.setVerified(true);
 
         org.springframework.security.core.userdetails.UserDetails userDetails =

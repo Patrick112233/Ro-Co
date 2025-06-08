@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {
@@ -11,22 +12,22 @@ class UserTest {
 
     @Test
     void testUserCreation() {
-        assertThrows( IllegalArgumentException.class,() -> new User(null, null, "myName", null));
-        assertThrows( IllegalArgumentException.class,() -> new User("Not@mail.com", "invalid", "myName", null));
-        assertThrows( IllegalArgumentException.class,() -> new User("invalid.mail.com", "Pw123456!", "myName", null));
-        assertThrows( IllegalArgumentException.class,() -> new User("invalid.mail.com", "Pw123456!", "myName", ""));
-        assertThrows( IllegalArgumentException.class,() -> new User("invalid.mail.com", "Pw123456!", "myName", "INVALID_ROLE"));
-        assertThrows( IllegalArgumentException.class,() -> new User("valid@mail.com", "Pw123456!", "", null));
-        assertThrows( IllegalArgumentException.class,() -> new User("valid@mail.com", "Pw123456!", null, null));
-        assertThrows( IllegalArgumentException.class,() -> new User("valid@mail.com", "Pw123456!", "Al", null));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser(null, null, "myName", null));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser("Not@mail.com", "invalid", "myName", null));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser("invalid.mail.com", "Pw123456!", "myName", null));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser("invalid.mail.com", "Pw123456!", "myName", ""));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser("invalid.mail.com", "Pw123456!", "myName", "INVALID_ROLE"));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser("valid@mail.com", "Pw123456!", "", null));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser("valid@mail.com", "Pw123456!", null, null));
+        assertThrows( IllegalArgumentException.class,() -> instantiateUser("valid@mail.com", "Pw123456!", "Al", null));
 
-        User user = new User("valid@mail.com", "Pw123456!", "myName", "USER");
+        User user = instantiateUser("valid@mail.com", "Pw123456!", "myName", "USER");
         assertNotNull(user);
         assertNotEquals("Pw123456!", user.getPassword()); // Password should be encrypted
         assertEquals("USER", user.getRole());
         assertEquals("valid@mail.com", user.getEmail());
 
-        User user2 = new User("valid@mail.com", "Pw123456!", "myName",null);
+        User user2 = instantiateUser("valid@mail.com", "Pw123456!", "myName",null);
         assertNotNull(user2);
         assertEquals("USER", user2.getRole()); // Default role should be USER
 
@@ -34,7 +35,7 @@ class UserTest {
 
     @Test
     void getSetRole() {
-        User user = new User("not@mail.com", "Pw123456!", "myName",null);
+        User user = instantiateUser("not@mail.com", "Pw123456!", "myName",null);
         assertThrows(IllegalArgumentException.class, () -> user.setRole("INVALID_ROLE"));
         assertThrows(IllegalArgumentException.class  , () -> user.setRole((String) null));
         assertThrows(IllegalArgumentException.class  , () -> user.setRole(""));
@@ -63,7 +64,7 @@ class UserTest {
 
     @Test
     void testGetSetPassword() {
-        User user = new User("not@mail.com", "Pw123456!", "myName", null);
+        User user = instantiateUser("not@mail.com", "Pw123456!", "myName", null);
         assertThrows(IllegalArgumentException.class, () -> user.setPassword(null));
         assertThrows(IllegalArgumentException.class, () -> user.setPassword(""));
         assertThrows(IllegalArgumentException.class, () -> user.setPassword("short"));
@@ -82,7 +83,7 @@ class UserTest {
 
     @Test
     void testGetSetEmail() {
-        User user = new User("valid@mail.com", "Pw123456!", "myName", null);
+        User user = instantiateUser("valid@mail.com", "Pw123456!", "myName", null);
 
         // Null und leer
         assertThrows(IllegalArgumentException.class, () -> user.setEmail(null));
@@ -106,7 +107,7 @@ class UserTest {
 
     @Test
     void testGetSetDisplayName() {
-        User user = new User("valid@mail.com", "Pw123456!", "myName", null);
+        User user = instantiateUser("valid@mail.com", "Pw123456!", "myName", null);
 
         // Null und leer
         assertThrows(IllegalArgumentException.class, () -> user.setDisplayName(null));
@@ -129,7 +130,7 @@ class UserTest {
 
     @Test
     void testAddRemoveGetRefreshTokens() {
-        User user = new User("valid@mail.com", "Pw123456!", "myName", "USER");
+        User user = instantiateUser("valid@mail.com", "Pw123456!", "myName", "USER");
         RefreshToken token1 = new RefreshToken("token1Id", "token1Hash");
         RefreshToken token2 = new RefreshToken("token2Id","token2Hash");
 
@@ -154,7 +155,7 @@ class UserTest {
 
     @Test
     void testGetAuthorities() {
-        User user = new User("valid@mail.com", "Pw123456!", "myName", "USER");
+        User user = instantiateUser("valid@mail.com", "Pw123456!", "myName", "USER");
         assertEquals(1, user.getAuthorities().size());
         assertTrue(user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("USER")));

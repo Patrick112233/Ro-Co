@@ -6,6 +6,11 @@ import de.th_rosenheim.ro_co.restapi.dto.OutUserDto;
 import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import jakarta.validation.ValidationException;
+import kong.unirest.core.GetRequest;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.Unirest;
+import kong.unirest.core.UnirestException;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -15,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 
 import de.th_rosenheim.ro_co.restapi.model.User;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
@@ -24,13 +30,12 @@ import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
 @Service
 public class UserService {
 
+
     private UserRepository repository;
 
     UserService(UserRepository repository) {
         this.repository = repository;
     }
-
-
 
     public Optional<OutUserDto> getUser(String id) throws IllegalArgumentException, ValidationException {
         if (id == null || id.isEmpty()) {
@@ -90,5 +95,38 @@ public class UserService {
     }
 
 
+
+    public byte[] getUserIcon(String id) throws  IllegalArgumentException, IOException {
+        if (id == null || id.isEmpty()) {
+            throw new IllegalArgumentException("ID cannot be null or empty");
+        }
+        Optional<User> user = repository.findById(id);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User with ID " + id + " not found");
+        }
+        User dbUser = user.get();
+        if (!dbUser.isHasImage()) {
+            //lazy load user icon if not already set
+            dbUser.generateUserIcon();
+            repository.save(dbUser);
+        }
+        return dbUser.getImage().getData();
+    }
+
+
+    public byte[] generateUserIcon(String email) throws IOException, IllegalArgumentException, UsernameNotFoundException {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("ID cannot be null or empty");
+        }
+        Optional<User> user = repository.findByEmail(email);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User with email " + email + " not found");
+        }
+        User dbUser = user.get();
+
+        dbUser.generateUserIcon();
+        repository.save(dbUser);
+        return dbUser.getImage().getData();
+    }
 
 }

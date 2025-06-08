@@ -16,6 +16,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
+
+import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -46,7 +48,7 @@ class UserServiceTest {
 
         // Teste gültige User
         String validId = "507f1f77bcf86cd799439011";
-        User validUser = new User("valid@example.com", "Pw123456!", "Valid User","USER");
+        User validUser = instantiateUser("valid@example.com", "Pw123456!", "Valid User","USER");
         validUser.setId(validId);
         validUser.setVerified(true);
         when(repository.findById(validId)).thenReturn(Optional.of(validUser));
@@ -61,13 +63,13 @@ class UserServiceTest {
         assertDoesNotThrow(() -> userService.getUser("!@#$%^&*()"));
 
         //test with invalid fields in data:
-        var invalidUser = new User("Not@mail.com", "Pw123456!","myName", "USER");
+        var invalidUser = instantiateUser("Not@mail.com", "Pw123456!","myName", "USER");
         try {
             Field field = User.class.getDeclaredField("email");
             field.setAccessible(true);
             field.set(invalidUser, "not.valid.email");
 
-            Field passwordField = User.class.getDeclaredField("encPassword");
+            Field passwordField = User.class.getDeclaredField("password");
             passwordField.setAccessible(true);
             passwordField.set(invalidUser, "pw");
 
@@ -87,15 +89,15 @@ class UserServiceTest {
     @Test
     void getAllUsers() {
         // Teste gültige User
-        User user1 = new User("user1@example.com", "Password1234!", "User One","USER");
+        User user1 = instantiateUser("user1@example.com", "Password1234!", "User One","USER");
         user1.setVerified(true);
         user1.setId("507f1f77bcf86cd799439011");
 
-        User user2 = new User("user2@example.com", "Password567!","User Two", "USER");
+        User user2 = instantiateUser("user2@example.com", "Password567!","User Two", "USER");
         user2.setVerified(true);
         user2.setId("507f1f77bcf86cd799439012");
 
-        User user3 = new User("user3@example.com", "Password890!", "User Three","USER");
+        User user3 = instantiateUser("user3@example.com", "Password890!", "User Three","USER");
         user3.setVerified(true);
         user3.setId("507f1f77bcf86cd799439013");
 
@@ -116,7 +118,7 @@ class UserServiceTest {
         assertThrows(IllegalArgumentException.class, () -> userService.getAllUsers(0, 101));
 
         // User mit ungültiger E-Mail (Regex)
-        var userInvalidEmail = new User("Not@mail.com", "Pw123456!","validName", "USER");
+        var userInvalidEmail = instantiateUser("Not@mail.com", "Pw123456!","validName", "USER");
         try {
             Field field = User.class.getDeclaredField("email");
             field.setAccessible(true);
@@ -131,7 +133,7 @@ class UserServiceTest {
         assertThrows(ValidationException.class, () -> userService.getAllUsers(0, 10));
 
         // User mit null-Werten in id, username, email
-        var userWithNulls = new User("Not@mail.com", "Pw123456!", "displayName","USER");
+        var userWithNulls = instantiateUser("Not@mail.com", "Pw123456!", "displayName","USER");
         try {
             Field field = User.class.getDeclaredField("email");
             field.setAccessible(true);
@@ -156,7 +158,7 @@ class UserServiceTest {
 
 
         // User mit zu kurzem username
-        var userShortName = new User("Not@mail.com", "Pw123456!", "displayName","USER");
+        var userShortName = instantiateUser("Not@mail.com", "Pw123456!", "displayName","USER");
         try {
             Field displayNameField = User.class.getDeclaredField("displayName");
             displayNameField.setAccessible(true);
@@ -172,7 +174,7 @@ class UserServiceTest {
 
         // User mit zu langem username
         String longName = "a".repeat(256);
-        User userLongName = new User("test@example.com", "Pw123456!", "validName","USER");
+        User userLongName = instantiateUser("test@example.com", "Pw123456!", "validName","USER");
         try {
             Field displayNameField = User.class.getDeclaredField("displayName");
             displayNameField.setAccessible(true);
@@ -198,7 +200,7 @@ class UserServiceTest {
     void updateUser() {
         String validId = "507f1f77bcf86cd799439011";
         var inUserDto = new InUserDto("ValidName");
-        var existingUser = new User("test@example.com", "Pw123456!", "OldName","USER");
+        var existingUser = instantiateUser("test@example.com", "Pw123456!", "OldName","USER");
         existingUser.setId(validId);
         existingUser.setVerified(true);
 
@@ -220,7 +222,7 @@ class UserServiceTest {
         // 4. Ungültiger User (ungültige E-Mail)
         var invalidEmailDto = new InUserDto("ValidName");
 
-        var invalidUser = new User("Not@mail.com", "Pw123456!", "ValidName","USER");
+        var invalidUser = instantiateUser("Not@mail.com", "Pw123456!", "ValidName","USER");
         Field field = null;
         try {
             field = User.class.getDeclaredField("email");
@@ -251,7 +253,7 @@ class UserServiceTest {
     @Test
     void resetPassword() {
         // 1. Normalfall: Passwort wird aktualisiert
-        var user = new User("test@example.com", "OldPassword1!", "TestUser","USER");
+        var user = instantiateUser("test@example.com", "OldPassword1!", "TestUser","USER");
         user.setVerified(true);
         var oldPasswordHash = user.getPassword(); // Speichere altes Passwort
 

@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -68,6 +69,20 @@ public class AuthenticationController {
         Optional<LoginOutDto> loginResponse = authenticationService.authenticate(loginUserDto);
         return loginResponse.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
     }
+
+    @Operation(summary = "Logout a user", description = "Tels the API that the user wants to logout. This will invalidate the JWT token.")
+    @PostMapping("/logout")
+    public ResponseEntity<LoginOutDto> logout(@Valid @RequestBody InRefreshToken inRefreshToken) {
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            authenticationService.deAuthenticate(userMail, inRefreshToken);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
+
 
     @Operation(summary = "Refresh JWT token", description = "Refresh the JWT token using a refresh token.")
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)

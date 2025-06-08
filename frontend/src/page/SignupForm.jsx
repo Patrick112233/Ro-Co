@@ -4,7 +4,7 @@ import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import logo from '../assets/ROLIP_Logo.jpg'
-import axios from '../api/axios.js'
+import axios from '../util/axios.js'
 import { useLocation, useNavigate } from 'react-router-dom';
 
 
@@ -178,7 +178,7 @@ useEffect(() => {
         if(err?.response?.data?.errorMessage){
             setErrMsg(err?.response?.data?.errorMessage);
         }else {
-          setErrMsg('Registration railed for unknowen reason')
+          setErrMsg('Registration failed for unknowen reason')
         }
       }
     }
@@ -193,8 +193,8 @@ useEffect(() => {
         <Container className="d-flex align-items-center justify-content-center vh-100">
           <Row className="justify-content-md-center border rounded bg-primary p-4 text-white">
             <Col className="align-items-center" style={{width: '300px'}}>
-                <img src={logo} alt="ROLIP Logo" className="mb-3 img-fluid"  style={{height:'auto'}}/>
-                <h2>{isSignUp ? 'Signup' : 'Login'}</h2>
+              <img src={logo} alt="ROLIP Logo" className="mb-3 img-fluid" style={{height:'auto'}}/>
+              <h2>{isSignUp ? 'Signup' : 'Login'}</h2>
                 <Form onSubmit={handleSubmit}>
                   {isSignUp && (
                       <>

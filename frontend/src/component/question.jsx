@@ -2,12 +2,17 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronDown, faChevronUp} from "@fortawesome/free-solid-svg-icons";
 import React, {useState} from "react";
 import {motion} from "motion/react";
+import useEffect from "react";
 
-
-const Question = () => {
+const Question = ({ id }) => {
 
     const [isOpen, setIsOpen] = useState(false);
 
+    /*
+    useEffect(() => {
+        //Load question data by id
+    }, [id]);
+    */
 
     return (<>
     <div className="px-2 py-1">
