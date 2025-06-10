@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -28,7 +29,7 @@ public class QuestionController {
 
     @Operation(summary = "Get question by ID", description = "Retrieve the details of a question by their unique ID.")
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<OutQuestionDto> getUser(@PathVariable String id) {
+    public ResponseEntity<OutQuestionDto> getQuestion(@PathVariable String id) {
         Optional<OutQuestionDto> question = this.questionService.getQuestion(id);
         return question.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -55,12 +56,21 @@ public class QuestionController {
         return ResponseEntity.created(uri).body(responseDTO.get());
     }
 
+    @Operation(summary = "Update question by ID", description = "Modify the details of an existing question by their unique ID.")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<OutQuestionDto> updateQuestion(@PathVariable String id, @Valid @RequestBody InStatusQuestionDto statusQuestionDto) {
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<OutQuestionDto> updatedQuestion = this.questionService.updateStatusQuestion(id, statusQuestionDto, userMail);
+        return updatedQuestion.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
-    @Secured("ADMIN")
-    @Operation(summary = "Delete user by ID", description = "Remove a user from the system by their unique ID.")
+
+
+    @Operation(summary = "Delete a question by ID", description = "Remove a question from the system by their unique ID.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteQuestion(@PathVariable String id) {
-        this.questionService.deleteQuestion(id);
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
+        this.questionService.deleteQuestion(id, userMail);
         return ResponseEntity.ok().build();
     }
 

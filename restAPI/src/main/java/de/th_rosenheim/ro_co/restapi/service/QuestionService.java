@@ -1,17 +1,23 @@
 package de.th_rosenheim.ro_co.restapi.service;
 
 import de.th_rosenheim.ro_co.restapi.dto.InQuestionDto;
+import de.th_rosenheim.ro_co.restapi.dto.InStatusQuestionDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutQuestionDto;
 import de.th_rosenheim.ro_co.restapi.mapper.QuestionMapper;
 import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
+import de.th_rosenheim.ro_co.restapi.model.Answer;
 import de.th_rosenheim.ro_co.restapi.model.Question;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.QuestionRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
+import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 import java.util.Optional;
 import static de.th_rosenheim.ro_co.restapi.mapper.Validator.validationCheck;
 
@@ -36,7 +42,7 @@ public class QuestionService {
             throw new IllegalArgumentException("Question not found");
         }
         OutQuestionDto result = QuestionMapper.INSTANCE.questionToOutQuestionDto(question.get());
-        result.setAuthor(UserMapper.INSTANCE.userToOutUserDto(question.get().getAuthor()));
+        result.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(question.get().getAuthor()));
         return Optional.of(validationCheck(result));
     }
 
@@ -47,7 +53,7 @@ public class QuestionService {
         PageRequest pageRequest = PageRequest.of(page, size);
         return questionRepository.findAll(pageRequest).map(question -> {
             OutQuestionDto dto = QuestionMapper.INSTANCE.questionToOutQuestionDto(question);
-            dto.setAuthor(UserMapper.INSTANCE.userToOutUserDto(question.getAuthor()));
+            dto.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(question.getAuthor()));
             return validationCheck(dto);
         });
     }
@@ -63,14 +69,44 @@ public class QuestionService {
         Question questionDB = questionRepository.insert(question);
 
         OutQuestionDto response = QuestionMapper.INSTANCE.questionToOutQuestionDto(questionDB);
-        response.setAuthor(UserMapper.INSTANCE.userToOutUserDto(author));
+        response.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(author));
         return Optional.of(validationCheck(response));
     }
 
-    public void deleteQuestion(String id) throws IllegalArgumentException {
-        if (id == null || id.isEmpty()) {
+    public void deleteQuestion(String id, String userMail) throws IllegalArgumentException {
+        if (id == null || id.isEmpty() || userMail == null || userMail.isEmpty()) {
+            throw new IllegalArgumentException("ID or userMail cannot be null or empty");
+        }
+
+        User user = userRepository.findByEmail(userMail).orElseThrow(() -> new ValidationException("User not found"));
+        Question question = questionRepository.findById(id).orElseThrow(() -> new ValidationException("Question not found"));
+        boolean isUserAllowedToDelete = (user.isVerified() && Objects.equals(question.getAuthor().getId(), user.getId())) || user.getRole().equals("ADMIN");
+        if (!isUserAllowedToDelete) {
+            throw new AuthenticationException("User not allowed to delete this question") {};
+        }
+
+        questionRepository.deleteById(id);
+    }
+
+    public Optional<OutQuestionDto> updateStatusQuestion(String id, InStatusQuestionDto statusQuestionDto, String userMail) {
+        if (id == null || id.isEmpty() || statusQuestionDto == null || userMail == null || userMail.isEmpty()) {
             throw new IllegalArgumentException("ID cannot be null or empty");
         }
-        questionRepository.deleteById(id);
+
+        Optional<User> user = userRepository.findByEmail(userMail);
+        Optional<Question> question = questionRepository.findById(id);
+        if (user.isEmpty()|| question.isEmpty()) {
+            throw new IllegalArgumentException("Eather user or question not found");
+        }
+        if (!user.get().getId().equals(question.get().getAuthor().getId())) {
+            throw new IllegalArgumentException("User is not the author of the question");
+        }
+
+        Question questionDB = question.get();
+        questionDB.setAnswered(statusQuestionDto.isAnswered());
+        questionDB = questionRepository.save(questionDB);
+        OutQuestionDto response = QuestionMapper.INSTANCE.questionToOutQuestionDto(questionDB);
+        response.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(user.get()));
+        return Optional.of(validationCheck(response));
     }
 }

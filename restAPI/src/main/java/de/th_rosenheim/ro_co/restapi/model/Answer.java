@@ -2,11 +2,15 @@ package de.th_rosenheim.ro_co.restapi.model;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.Date;
 
+@Data
+@Document(collection="Answer")
 public class Answer {
 
     @Id
@@ -21,4 +25,8 @@ public class Answer {
     @NotNull
     @DocumentReference(lazy = true)
     private User author;
+
+    @NotNull
+    @DocumentReference(lazy = true)
+    private Question question;
 }

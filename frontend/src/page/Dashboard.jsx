@@ -7,63 +7,88 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import CustomNavbar from './../component/navbar.jsx';
 import Question from "../component/question.jsx";
-import NewBtn from "../component/newBtn.jsx";
-import axios from "axios";
-
-
-
+import AskQuestion from "../component/askQuestion.jsx";
+import axios from "../util/axios.js";
+import handleErrorLogout from "../util/ErrorHandler.jsx";
+import {useNavigate} from "react-router-dom";
+import useSignOut from "react-auth-kit/hooks/useSignOut";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import ReactPullToRefresh from 'react-pull-to-refresh';
+import hash from 'object-hash';
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
 
 const Dashboard = () => {
+    let prevPage = -1;
+    const navigate = useNavigate();
+    const signOut = useSignOut();
+    const authHeader = useAuthHeader();
+    const [questions, setQuestions] = useState([]);
 
-    const [questionIDs, setQuestionIDs] = useState([1,2,3,4,5,6,7,8,9,10]);
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
+    const fetchQuestions = async () => {
+        let size = 10;
+        let pages = 10;
 
+        try {
+            let allLoadedQuestions = [];
+            for (let i = 0; i <= pages; i++) {
+                const response = await axios.get(
+                    `/question/all?page=${i}&size=${size}`,
+                    {
+                        headers: {'Content-Type': 'application/json',  'Authorization': authHeader},
+                        withCredentials: true
+                    }
+                );
 
-    // Dynamically load more questions when scrolling to the bottom
-    useEffect(() => {
-        const fetchQuestions = async () => {
-            const lastId = questionIDs.length > 0 ? questionIDs[questionIDs.length - 1] : 0;
-            const newIDs = Array.from({ length: 10 }, (_, index) => lastId + index + 1);
-            setQuestionIDs((prevQuestions) => Array.from(new Set([...prevQuestions, ...newIDs])));
-            /*
-            try {
-                const response = await axios.get(`/questions?page=${page}`);
-                if (response.data.length === 0) {
-                    setHasMore(false); // Keine weiteren Fragen verfügbar
-                } else {
-                    const newIDs = response.data.ids.map(id => ({id}));
-                    setQuestionIDs((prevQuestions) => [...prevQuestions, ...newIDs]);
+                if(response.status !== 200) {
+                    handleErrorLogout('',navigate, signOut, authHeader);
                 }
-            } catch (error) {
-                console.error('Fehler beim Laden der Fragen:', error);
-            }*/
-        };
+                const newQuestions = response.data.map(question => ({
+                    hash: hash(question),
+                    id: question.id,
+                    title: question.title,
+                    description: question.description,
+                    createdAt: question.createdAt,
+                    answered: question.answered,
+                    author: {
+                        id: question.author.id,
+                        username: question.author.username,
+                    }
+                }));
+                allLoadedQuestions = [...allLoadedQuestions, ...newQuestions];
+            }
+            setQuestions([...allLoadedQuestions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))]); // Neue Referenz erstellen
+        } catch (error) {
+            console.error('Fehler beim Laden der Fragen:', error);
+        }
+    };
 
-        fetchQuestions();
-    }, [page]);
 
     useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = window.scrollY;
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight;
+        // Initialer Aufruf von fetchQuestions
+        fetchQuestions();
+        // Auto polling 10s
+        const intervalId = setInterval(() => {
+            fetchQuestions();
+        }, 10000);
 
-            // Prüfen, ob der Benutzer das Ende der Seite erreicht hat
-            if (scrollTop + windowHeight >= documentHeight && hasMore) {
-                setPage((prevPage) => prevPage + 1); // Nächste Seite laden
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-
+        // Bereinigung des Intervalls beim Verlassen der Komponente
         return () => {
-            window.removeEventListener('scroll', handleScroll);
+            clearInterval(intervalId);
         };
-    }, [hasMore]);
+    }, []);
 
 
+
+    const handleNewQuestion = async (newQuestion) => {
+        fetchQuestions();
+    };
+
+    const handleDeleteQuestion = (questionId) => {
+        fetchQuestions();
+    };
+
+    /*
     const events = [
         {id: 1},
         {id: 1}
@@ -120,11 +145,14 @@ const Dashboard = () => {
 
         ]
     }
+*/
 
     return (
         <>
             <CustomNavbar/>
-            <NewBtn/>
+
+            <AskQuestion refreshHook={handleNewQuestion} />
+            {/*Inner main*
             <div className="m-auto justify-content-center" style={{width: '90vw'}}>
                 <div className="mt-5">
                     <Slider {...sliderSettings}>
@@ -137,14 +165,15 @@ const Dashboard = () => {
                 </div>
             </div>
             <hr className="mx-5 my-3"/>
+            */}
 
             {/*Inner main*/}
-            <div>
-                    {questionIDs.map((question) => (
-                            <Question key={question} id={question} />
+            <ReactPullToRefresh onRefresh={fetchQuestions}>
+            {questions.map((question) => (
+                            <Question key={question.hash} id={question.id} title={question.title} description={question.description} createdAt={question.createdAt} answered={question.answered} author={question.author} onDelete={handleDeleteQuestion} />
                     ))}
-                    {!hasMore && <p>Keine weiteren Fragen verfügbar.</p>}
-            </div>
+                    {questions.length === 0 &&  <h2 className="align-content-center text-center">No questions available</h2>}
+            </ReactPullToRefresh>
             {/*/Inner main*/}
 
         </>
