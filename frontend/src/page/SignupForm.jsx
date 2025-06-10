@@ -10,17 +10,18 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 const LOGIN_URL = 'auth/login';
 const SIGNUP_URL = 'auth/signup';
-
 const EMAIL_REGEX = /^((?!\.)[\w\-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
-
+/**
+ * Login and Signup form
+ * @returns {Element}
+ */
 const SignupForm = () => {
   const signIn = useSignIn()
-
-
   const navigate = useNavigate();
   const location = useLocation();
+
   const from = location.state?.from?.pathname || "/";
 
   const userRef = useRef();
@@ -40,21 +41,63 @@ const SignupForm = () => {
 
   const [errMsg, setErrMsg] = useState('');
 
-  //page load hock
+  /**
+   * Initial page load hook, sets the focus.
+   */
   useEffect(() => {
     userRef.current.focus();
   }, [])
 
-  //check username
-useEffect(() => {
-  let cooldownTimer = null;
+  /**
+   * Username Hook, validates and calls availability check. Implements a 1s cool down to avoid high load.
+   */
+  useEffect(() => {
+    let cooldownTimer = null;
+    if (userName) {
+      cooldownTimer = setTimeout(() => {
+        checkUsernameAvailability();
+      }, 1000); // 1000ms cooldown
+    }
+    //Decativat cooldown timer
+    return () => {
+      if (cooldownTimer) {
+        clearTimeout(cooldownTimer);
+      }
+    };
+  }, [userName]);
 
+  /**
+   * Email Validation hook. Checks for E-mail regex
+   */
+  useEffect(() => {
+    setValidMale(EMAIL_REGEX.test(mail));
+  }, [mail])
+
+  /**
+   * Password matcher hook, checks weather both entered passwords match.
+   */
+  useEffect(() => {
+    setValidPwd(PWD_REGEX.test(pwd));
+    setValidMatch(pwd === matchPwd);
+  }, [pwd, matchPwd])
+
+  /**
+   * Resets error message after input changed
+   */
+  useEffect(() => {
+    setErrMsg('');
+  }, [mail, pwd, matchPwd])
+
+
+  /**
+   * Check availability of usernames with Rest API. name must be >3 chars.
+   * @returns {Promise<void>}
+   */
   const checkUsernameAvailability = async () => {
     if (userName.length < 3) {
-        setIsUsernameAvailable(false);
-        return;
+      setIsUsernameAvailable(false);
+      return;
     }
-    //request username availability on server
     try {
       const { status } = await axios.get('/auth/signup/username', {
         params: { username: userName },
@@ -68,49 +111,27 @@ useEffect(() => {
         setIsUsernameAvailable(false);
       } else {
         setErrMsg('Server error, please try again later');
-        console.error('An unexpected error occurred:', response?.statusText || 'Unknown error');
       }
     }
   };
 
-  if (userName) {
-    cooldownTimer = setTimeout(() => {
-      checkUsernameAvailability();
-    }, 1000); // 1000ms cooldown
-  }
-
-  return () => {
-    if (cooldownTimer) {
-      clearTimeout(cooldownTimer);
-    }
-  };
-}, [userName]);
-
-  //email filed changed hook
-  useEffect(() => {
-    setValidMale(EMAIL_REGEX.test(mail));
-  }, [mail])
-
-  //pwd filed changed hook (checks if pwds matchs and if pwd is valid)
-  useEffect(() => {
-    setValidPwd(PWD_REGEX.test(pwd));
-    setValidMatch(pwd === matchPwd);
-  }, [pwd, matchPwd])
-
-  //hide error msg on any change
-  useEffect(() => {
-    setErrMsg('');
-  }, [mail, pwd, matchPwd])
-
+  /**
+   * Checks and forwards login/signup data to the Rest API. Forward rout respectifly.
+   * Also stores refresh and access tokens.
+   * @param e
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // if button enabled with JS hack
+    // Validate Input
     const v1 = EMAIL_REGEX.test(mail);
     const v2 = PWD_REGEX.test(pwd);
     if (!v1 || !v2) {
       setErrMsg("Invalid Entry");
       return;
     }
+
+    //signup and login
     try {
       let response;
       if (isSignUp) {
@@ -128,7 +149,7 @@ useEffect(() => {
         );
       }
 
-      // login even necesery after signup to get the access token!
+      // login to get access token
       response = await axios.post(
           LOGIN_URL,
           {
@@ -140,7 +161,7 @@ useEffect(() => {
             withCredentials: true
           });
 
-
+      //getback data
       const accessToken = response?.data?.token;
       const refreshToken = response?.data?.refreshToken;
       const authMail = response?.data?.email;
@@ -148,6 +169,7 @@ useEffect(() => {
       const userID = response?.data?.id;
 
 
+      //Set refresh and access token for global storage
       if(!signIn({
         auth: {
           token: accessToken,
@@ -164,11 +186,11 @@ useEffect(() => {
           return;
       }
 
+      //reset fields and navigate to the path we came from
       setMail('');
       setPwd('');
       setMatchPwd('');
       navigate(from, { replace: true }); //links back from where you come from!
-
     } catch (err) {
       if (!err?.response) {
         setErrMsg('No Server Response');
@@ -185,6 +207,9 @@ useEffect(() => {
 
   }
 
+  /**
+   * Callback funktion to toggle between signup and login form.
+   */
   const toggleSignUp = () => {
     setIsSignUp(!isSignUp);
   }
@@ -239,7 +264,6 @@ useEffect(() => {
                       aria-describedby="uidnote"
                       placeholder="Enter your email"
                       className={mail.length <= 0 ?  "form-control d-inline-flex": validMail ? "form-control d-inline-flex is-valid" : "form-control d-inline-flex is-invalid"}
-
                   />
                   </div>
 
@@ -264,7 +288,6 @@ useEffect(() => {
                           Allowed special characters: <span aria-label="exclamation mark">!</span> <span aria-label="at symbol">@</span> <span aria-label="hashtag">#</span> <span aria-label="dollar sign">$</span> <span aria-label="percent">%</span>
                       </div>
                   )}
-
 
                   {isSignUp && (
                       <>

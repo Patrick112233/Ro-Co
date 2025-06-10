@@ -9,18 +9,27 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
-//import DOMPurify from 'dompurify'; //@TODO XSS protetction!
-
+/**
+ *
+ * @param id {String} Id of answer
+ * @param description {String}  actual answere
+ * @param createdAt {String} ISO 8601 timestamp UTC
+ * @param author {object} autor object containing id and username
+ * @param questionID {String} Id of the respective question
+ * @param onDelete {function} hook to update UI after deletion
+ * @returns {Element}
+ */
 const Answer = ({ id, description, createdAt, author, questionID , onDelete}) => {
     const navigate = useNavigate();
     const signOut = useSignOut();
     const authHeader = useAuthHeader();
     const auth = useAuthUser()
 
-
     const [profileImage, setProfileImage] = useState(null);
 
-
+    /**
+     * Post-loads the autor icon
+     */
     useEffect(() => {
         //Load autor avatar
         axios.get(
@@ -33,6 +42,7 @@ const Answer = ({ id, description, createdAt, author, questionID , onDelete}) =>
             if (response.status !== 200) {
                 throw new Error('Cant fetch user data');
             }
+            //provide svg as online resource
             const blob = new Blob([response.data], { type: 'image/svg+xml' });
             const localUrl = URL.createObjectURL(blob);
             setProfileImage(localUrl);
@@ -43,6 +53,11 @@ const Answer = ({ id, description, createdAt, author, questionID , onDelete}) =>
     }, [author]);
 
 
+    /**
+     * Deletes the answere in the rest API and trigger UI update.
+     * @param answerId
+     * @returns {Promise<void>}
+     */
     const deleteAnswer = async (answerId) => {
         try {
             const response = await axios.delete(`/answer/${answerId}`, {
@@ -53,10 +68,9 @@ const Answer = ({ id, description, createdAt, author, questionID , onDelete}) =>
             if (response.status === 200) {
                 onDelete(answerId);
             } else {
-                console.error("Error deleting the answer:", error);
+                throw new Error('Unexpected response code');
             }
         } catch (error) {
-            console.error("Error deleting the answer:", error);
             handleErrorLogout(error, navigate, signOut, authHeader);
         }
     };

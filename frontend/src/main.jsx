@@ -1,4 +1,3 @@
-
 import React from "react";
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -7,7 +6,6 @@ import AuthProvider from 'react-auth-kit';
 import createStore from 'react-auth-kit/createStore';
 import SignupForm from "./page/SignupForm.jsx";
 import Dashboard from "./page/Dashboard.jsx";
-
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './custom-bootstrap.scss';
@@ -22,8 +20,6 @@ const store = createStore({
     cookieSecure: true,
     refresh: refresh
 });
-
-
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

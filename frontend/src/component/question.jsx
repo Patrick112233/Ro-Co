@@ -11,24 +11,87 @@ import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import Answer from "../component/answer.jsx";
 import formatTimespan from "../auth/time.js";
 import hash from "object-hash";
-//import DOMPurify from 'dompurify'; //@TODO XSS protetction!
 
-
+/**
+ * The Question object represents a User question
+ * @param id question ID
+ * @param title subject of question
+ * @param description detailed question
+ * @param createdAt {String} ISO 8601 timestamp UTC
+ * @param answered {boolean} marks if question was answered
+ * @param author {object} autor object containing id and username
+ * @param onDelete hook to triggere when component is deleted
+ * @returns {Element}
+ */
 const Question = ({ id, title, description, createdAt, answered, author, onDelete }) => {
     const navigate = useNavigate();
     const signOut = useSignOut();
     const authHeader = useAuthHeader();
     const auth = useAuthUser()
-    const [answeredLocal, setAnsweredLocal] = useState(answered);
+
+    const [isAnswered, setIsAnswered] = useState(answered);
     const [isOpen, setIsOpen] = useState(false);
     const [profileImage, setProfileImage] = useState(null);
-
     const [answers, setAnswers] = useState([]);
     const [comment, setComment] = useState("");
-    let currentPage = 0; // pages up to this are actually loaded
-    let intervalId; //variable for answare polling
+    let answerFetchIntervalId;
 
-    const postComment = async () => {
+    /**
+     * Fetches answers initially and then polls them in a 10s interwall when the answer section is extracted.
+     */
+    useEffect(() => {
+        if (isOpen) {
+            //initial fetch + Polling
+            fetchAnswers();
+            answerFetchIntervalId = setInterval(fetchAnswers, 10000); //10s
+        }else {
+            //stop polling if subsection was closed
+            clearInterval(answerFetchIntervalId);
+        }
+        return () => {
+            //clear polling if not rendered
+            clearInterval(answerFetchIntervalId);
+        };
+    }, [isOpen]);
+
+    /**
+     * Post loads the user avatar as soon as the componen get rendered.
+     * Warnig: does not check for avatar changes as this is not intendet.
+     */
+    useEffect(() => {
+        axios.get(
+            '/user/' + author.id + '/icon',
+            {
+                headers: {'Content-Type': 'application/json',  'Authorization': authHeader},
+                withCredentials: true
+            }
+        ).then((response) => {
+            if (response.status !== 200) {
+                throw new Error('Cant fetch user data');
+            }
+            //extract image as a server resource via url.
+            const blob = new Blob([response.data], { type: 'image/svg+xml' });
+            const localUrl = URL.createObjectURL(blob);
+            setProfileImage(localUrl);
+        }).catch( (error) => {
+            handleErrorLogout(error, navigate, signOut, authHeader);
+        });
+
+    }, [author]);
+
+    /**
+     * Handels hook when an answere is delted.
+     * @param answerId
+     */
+    const handleDeleteAnswer = (answerId) => {
+        fetchAnswers()
+    };
+
+    /**
+     * Takes the answer from the input field, and post it to the Rest API and also add it to local UI.
+     * @returns {Promise<void>}
+     */
+    const postAnswer = async () => {
         if (!comment.trim()) {
             console.error("Comentary is empty");
             return;
@@ -49,32 +112,24 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
             );
 
             if (response.status === 201) {
+                //clear field
+                setComment("");
+                // add to local gui
                 response.data.hash = hash(response.data)
-                setComment(""); // Kommentarfeld leeren
                 setAnswers((prevAnswers) => [...prevAnswers, response.data]);
             } else {
                 throw new Error("Error on posting comment");
             }
         } catch (error) {
-            console.error("Error on posting comment:", error);
             handleErrorLogout(error, navigate, signOut, authHeader);
         }
     };
 
-    useEffect(() => {
-        if (isOpen) {
-            pollAnswers();
-            intervalId = setInterval(pollAnswers, 10000);
-        }else {
-            clearInterval(intervalId); // Intervall stoppen
-        }
-        return () => {
-            clearInterval(intervalId); // Clearing polling on component unmount
-        };
-    }, [isOpen]);
-
-
-    const pollAnswers = async () => {
+    /**
+     * Fetch all answers of the question.
+     * @returns {Promise<void>}
+     */
+    const fetchAnswers = async () => {
         let allAnswers = [];
         let localPage = 0;
         let pageSize = 10;
@@ -90,9 +145,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                 );
 
                 if (response.status === 200 && response.data.length > 0) {
-                    /*const newAnswers = response.data.filter(answer =>
-                        !answers.some(existingAnswer => existingAnswer.id === answer.id)
-                    );*/
+                    //using hash as key to ensure that object get rerendered
                     const newAnswers= response.data.map(answer => ({
                         hash: hash(answer),
                         id: answer.id,
@@ -103,17 +156,17 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                             username: answer.author.username,
                         }
                     }));
-
+                    //collect data
                     allAnswers = [...allAnswers, ...newAnswers];
                 }
 
+                //Check for next page
                 if (response.data.length >= pageSize) {
                     localPage += 1;
                 } else {
                     break;
                 }
             } catch (error) {
-                console.error('Polling answers failed', error);
                 handleErrorLogout(error, navigate, signOut, authHeader);
                 break;
             }
@@ -122,29 +175,11 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
     };
 
 
-    useEffect(() => {
-        //Load autor avatar
-        // fetch User Profile Image
-        axios.get(
-            '/user/' + author.id + '/icon',
-            {
-                headers: {'Content-Type': 'application/json',  'Authorization': authHeader},
-                withCredentials: true
-            }
-        ).then((response) => {
-            if (response.status !== 200) {
-                throw new Error('Cant fetch user data');
-            }
-            const blob = new Blob([response.data], { type: 'image/svg+xml' });
-            const localUrl = URL.createObjectURL(blob);
-            setProfileImage(localUrl);
-        }).catch( (error) => {
-            handleErrorLogout(error, navigate, signOut, authHeader);
-        });
-
-    }, [author]);
-
-
+    /**
+     * Deletes a question from the Rest API, and calls onDelete to refresh UI.
+     * @param questionId {String}
+     * @returns {Promise<void>}
+     */
     const deleteQuestion = async (questionId) => {
         //check if question is my question
         if (author.id !== auth.uid) {
@@ -158,9 +193,10 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
             });
 
             if (response.status === 200) {
+                //call hook from Dashboard to refresh UI
                 onDelete(questionId);
             } else {
-                console.error("Error deleting the answer:", error);
+                throw new Error("Wrong response code");
             }
         } catch (error) {
             console.error("Error deleting the answer:", error);
@@ -170,8 +206,13 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
 
 
     // Funktion zum Umschalten des Status und Aktualisieren der REST-API
+    /**
+     * Signalm Rest API that a question is marked as answered. Ounly allow own questions to be marked.
+     * @param questionId
+     * @returns {Promise<void>}
+     */
     const toggleAnswered = async (questionId) => {
-        //check if question is my question
+        //check if it is own question
         if (author.id !== auth.uid) {
             console.error('You can only change the status of your own questions.');
             return;
@@ -179,7 +220,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
         try {
             const response = await axios.put(
                 `/question/${questionId}/status`,
-                { answered: !answeredLocal },
+                { answered: !isAnswered },
                 {
                     headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
                     withCredentials: true,
@@ -187,20 +228,15 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
             );
 
             if (response.status === 200) {
-                setAnsweredLocal(response.data.answered);
+                setIsAnswered(response.data.answered);
             } else {
                 throw new Error('Fehler beim Aktualisieren des Status');
             }
         } catch (error) {
-            console.error('Fehler beim Umschalten des Status:', error);
             handleErrorLogout(error, navigate, signOut, authHeader);
         }
     };
 
-    const handleDeleteAnswer = (answerId) => {
-        pollAnswers()
-        //setAnswers((prevAnswers) => prevAnswers.filter((answer) => answer.id !== answerId));
-    };
 
     return (<>
     <div className="px-2 py-1">
@@ -221,16 +257,6 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                                     className="text-secondary font-weight-bold"> {formatTimespan(createdAt)} ago</span>
                             </p>
                             <h4 className="pt-1 mb-1">{title}</h4>
-                            { /*<div className="d-flex flex-wrap mb-1">
-                                            <span className="badge me-2"
-                                                  style={{
-                                                      backgroundColor: '#1735CEFF', color: '#fff'
-                                                  }}>Informatics</span>
-                                <span className="badge me-2"
-                                      style={{backgroundColor: '#BF6E06FF', color: '#fff'}}>Database</span>
-                                <span className="badge me-2"
-                                      style={{backgroundColor: '#095705FF', color: '#fff'}}>Real-Time</span>
-                            </div>*/}
                         </div>
                     </div>
                 </div>
@@ -255,7 +281,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                                     icon={faCircleCheck}
                                     style={{
                                         fontSize: '2rem',
-                                        color: answeredLocal ? 'green' : 'gray',
+                                        color: isAnswered ? 'green' : 'gray',
                                     }}
                                 />
                             </button>
@@ -300,7 +326,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                                                 return;
                                             }
                                             e.preventDefault(); // Verhindert Zeilenumbruch
-                                            postComment(); // Kommentar posten
+                                            postAnswer(); // Kommentar posten
                                         }
                                     }}
                                 ></textarea>
@@ -310,7 +336,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                             <button
                                 type="button"
                                 className="me-2 btn btn-primary btn-sm text-white"
-                                onClick={postComment}>
+                                onClick={postAnswer}>
                                 Post comment
                             </button>
                         </div>
@@ -321,8 +347,5 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
     </div>
 </>);
 }
-
-
-
 
 export default Question;

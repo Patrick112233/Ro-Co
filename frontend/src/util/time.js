@@ -1,4 +1,8 @@
-
+/**
+ * Util function that converes a ISO 8601 timestamp UTC to a readable relative time distance to the current guest system timestamp.
+ * @param createdAt {string} ISO 8601 timestamp UTC
+ * @returns {string} strings like 1 min, 2 hours or 1 month evenen years
+ */
 function formatTimespan(createdAt) {
     const now = new Date();
     const createdDate = new Date(createdAt);

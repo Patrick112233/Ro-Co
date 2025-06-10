@@ -9,7 +9,12 @@ import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import axios from "../util/axios.js";
 
 
-
+/**
+ *
+ * @param refreshHook
+ * @returns {Element}
+ * @constructor
+ */
 const AskQuestion = (refreshHook) => {
     const navigate = useNavigate();
     const authHeader = useAuthHeader();
@@ -65,16 +70,6 @@ const AskQuestion = (refreshHook) => {
                 <button type="button" className="rounded-circle btn btn-primary" onClick={() => setAskPopUp(true)}>
                     <FontAwesomeIcon icon={faPencil} className="text-white p-2 fs-4"/>
                 </button>
-                {/*
-                          <button type="button" className="rounded-circle btn btn-primary" id="dropdownMenuButton"
-                        data-bs-toggle="dropdown" aria-expanded="false" onClick={setAskPopUp(true)}>
-                    <FontAwesomeIcon icon={faPencil} className="text-white p-2 fs-4"/>
-                </button>
-                <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <li><a className="dropdown-item" href="#">Ask Question</a></li>
-                    <li><a className="dropdown-item" href="#">Create Event</a></li>
-                </ul>
-                */}
             </div>
             <Popup trigger={askPopUp} setTrigger={setAskPopUp}>
                 <h2>Ask your Question</h2>
@@ -95,7 +90,6 @@ const AskQuestion = (refreshHook) => {
                         style={{ background: '#fff', resize: 'none' }}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-
                     />
                 </div>
                 <div className="mt-3 d-flex justify-content-end">

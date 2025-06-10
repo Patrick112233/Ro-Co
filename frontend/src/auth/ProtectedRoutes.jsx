@@ -2,6 +2,11 @@ import {Navigate, Outlet, useLocation} from "react-router-dom";
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 
 
+/**
+ * Implements a protekted rout element to ensure authentification is valid when a rout is changed.
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const ProtectedRoutes = () => {
     const isAuthenticated = useIsAuthenticated()
     const location = useLocation();

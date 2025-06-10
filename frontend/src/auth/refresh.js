@@ -1,12 +1,21 @@
 import createRefresh from 'react-auth-kit/createRefresh';
 import axios from '../util/axios.js'
 
+/**
+ * Get the refresh token from the current stored cookies.
+ * Warning: This function depends on the cousen name for the auth store
+ * @returns {string|string}
+ */
 function getRefresh() {
     var b = document.cookie.match("(^|;)\\s*" + "_auth_refresh" + "\\s*=\\s*([^;]+)");
     return b ? b.pop() : "";
 }
 export { getRefresh };
 
+/**
+ * Querries a new JWT access token via the refresh token.
+ * @type {createRefreshParamInterface<unknown>}
+ */
 const refresh = createRefresh({
     interval: 600, //in seconds
     refreshApiCallback: async (param) => {
