@@ -2,14 +2,14 @@ import React, {useEffect, useState} from 'react';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronDown, faChevronUp, faCircleCheck, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {motion} from "motion/react";
-import axios from "../util/axios.js";
-import handleErrorLogout from "../util/ErrorHandler.jsx";
+import axios from "@/util/axios.js";
+import handleErrorLogout from "@/util/ErrorHandler.jsx";
 import {useNavigate} from "react-router-dom";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import Answer from "../component/answer.jsx";
-import formatTimespan from "../auth/time.js";
+import Answer from "@/component/answer.jsx";
+import formatTimespan from "@/util/time.js";
 import hash from "object-hash";
 
 /**

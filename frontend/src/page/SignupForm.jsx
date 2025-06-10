@@ -3,8 +3,8 @@ import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import logo from '../assets/ROLIP_Logo.jpg'
-import axios from '../util/axios.js'
+import logo from '@/assets/ROLIP_Logo.jpg'
+import axios from '@/util/axios.js'
 import { useLocation, useNavigate } from 'react-router-dom';
 
 

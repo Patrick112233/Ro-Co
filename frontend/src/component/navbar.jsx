@@ -1,12 +1,12 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowRightFromBracket} from "@fortawesome/free-solid-svg-icons";
 import React, {useEffect, useState} from "react";
-import axios from "../util/axios.js";
+import axios from "@/util/axios.js";
 import {useNavigate} from "react-router-dom";
 import useSignOut from 'react-auth-kit/hooks/useSignOut'
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import handleErrorLogout from "../util/ErrorHandler.jsx";
+import handleErrorLogout from "@/util/ErrorHandler.jsx";
 
 /**
  * Makes the Nav-Bar on top  of the page.

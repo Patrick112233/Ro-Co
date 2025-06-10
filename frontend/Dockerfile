@@ -1,30 +1,21 @@
 # Standalone Build and Execution environment for the RoCo Gui React frontend.
 # docker build -t frontend .
-FROM node:20-alpine AS build
+# docker run -p 3000:3000 frontend
 
-#install npm
-RUN apk add --no-cache nodejs npm
+FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json .
+
 RUN npm install
 
+RUN npm i -g serve
+
 COPY . .
-#Enter bash shell to run the build command
-ENTRYPOINT ["/bin/bash"]
 
-#RUN npm run build
+RUN npm run build
 
-# Production stage
-#FROM nginx:alpine
+EXPOSE 3000
 
-
-# Copy built React app to Nginx html directory
-#COPY --from=build /app/build /usr/share/nginx/html
-
-# Expose port 80
-EXPOSE 80
-
-#CMD ["nginx", "-g", "daemon off;"]
-#ENTRYPOINT [ "/bin/bash" ]
+CMD [ "serve", "-s", "dist" ]

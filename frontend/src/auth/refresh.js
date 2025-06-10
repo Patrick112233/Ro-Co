@@ -1,5 +1,5 @@
 import createRefresh from 'react-auth-kit/createRefresh';
-import axios from '../util/axios.js'
+import axios from '@/util/axios.js'
 
 /**
  * Get the refresh token from the current stored cookies.

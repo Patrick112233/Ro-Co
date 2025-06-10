@@ -1,5 +1,5 @@
-import axios from '../util/axios.js'
-import {getRefresh} from "../auth/refresh.js";
+import axios from '@/util/axios.js'
+import {getRefresh} from "@/auth/refresh.js";
 
 /**
  * Handles errors by deleting cookies and force rout to login, also hints API to purge refreshtokens.

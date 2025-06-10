@@ -1,12 +1,12 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPencil} from "@fortawesome/free-solid-svg-icons";
 import React, {useState} from "react";
-import Popup from "./popup.jsx";
+import Popup from "@/component/popup.jsx";
 import {useNavigate} from "react-router-dom";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import axios from "../util/axios.js";
+import axios from "@/util/axios.js";
 
 
 /**

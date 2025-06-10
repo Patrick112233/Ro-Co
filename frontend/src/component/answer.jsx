@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
-import formatTimespan from "../auth/time.js";
-import axios from "../util/axios.js";
-import handleErrorLogout from "../util/ErrorHandler.jsx";
+import formatTimespan from "@/util/time.js";
+import axios from "@/util/axios.js";
+import handleErrorLogout from "@/util/ErrorHandler.jsx";
 import {useNavigate} from "react-router-dom";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
