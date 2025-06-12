@@ -4,6 +4,7 @@ import de.th_rosenheim.ro_co.restapi.dto.LoginUserDto;
 import de.th_rosenheim.ro_co.restapi.dto.RegisterUserDto;
 import de.th_rosenheim.ro_co.restapi.model.RefreshToken;
 import de.th_rosenheim.ro_co.restapi.model.User;
+import de.th_rosenheim.ro_co.restapi.repository.RefreshTokenRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ValidationException;
@@ -30,16 +31,30 @@ class AuthenticationServiceTest {
     private AuthenticationManager authenticationManager;
     private JwtService jwtService;
     private AuthenticationService authenticationService;
+    private UserService userService;
+    private RefreshTokenRepository refreshTokenRepository;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
         authenticationManager = mock(AuthenticationManager.class);
+        refreshTokenRepository = mock(RefreshTokenRepository.class);
         jwtService = mock(JwtService.class);
+        userService = mock(UserService.class);
 
-        authenticationService = new AuthenticationService(userRepository, authenticationManager, jwtService);
+        /*
+                    UserRepository userRepository,
+            AuthenticationManager authenticationManager,
+            RefreshTokenRepository refreshTokenRepository,
+            JwtService jwtService,
+            UserService userService
+
+         */
+
+        authenticationService = new AuthenticationService(userRepository, authenticationManager, refreshTokenRepository, jwtService, userService);
         java.lang.reflect.Field userField;
         java.lang.reflect.Field authField;
+        java.lang.reflect.Field refreshTokenField;
         java.lang.reflect.Field jwtServiceField;
         try {
             userField = AuthenticationService.class.getDeclaredField("userRepository");
@@ -50,10 +65,18 @@ class AuthenticationServiceTest {
             authField.setAccessible(true);
             authField.set(authenticationService, authenticationManager);
 
-            // JwtService setzen
+            refreshTokenField = AuthenticationService.class.getDeclaredField("refreshTokenRepository");
+            refreshTokenField.setAccessible(true);
+            refreshTokenField.set(authenticationService, refreshTokenRepository);
+
             jwtServiceField = AuthenticationService.class.getDeclaredField("jwtService");
             jwtServiceField.setAccessible(true);
             jwtServiceField.set(authenticationService, jwtService);
+
+            // Set userService field
+            Field userServiceField = AuthenticationService.class.getDeclaredField("userService");
+            userServiceField.setAccessible(true);
+            userServiceField.set(authenticationService, userService);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

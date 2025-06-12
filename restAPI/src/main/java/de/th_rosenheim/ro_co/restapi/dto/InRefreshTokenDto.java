@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class InRefreshToken {
+public class InRefreshTokenDto {
 
     @NotNull
     private String refreshToken;

@@ -2,6 +2,7 @@ package de.th_rosenheim.ro_co.restapi.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Date;
 import java.util.List;
 
 import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
@@ -131,8 +132,8 @@ class UserTest {
     @Test
     void testAddRemoveGetRefreshTokens() {
         User user = instantiateUser("valid@mail.com", "Pw123456!", "myName", "USER");
-        RefreshToken token1 = new RefreshToken("token1Id", "token1Hash");
-        RefreshToken token2 = new RefreshToken("token2Id","token2Hash");
+        RefreshToken token1 = new RefreshToken("token1Id", "token1Hash", new Date(System.currentTimeMillis() + 3600 * 1000));
+        RefreshToken token2 = new RefreshToken("token2Id", "token2Hash", new Date(System.currentTimeMillis() + 3600 * 1000));
 
         // Anfangs leer
         assertTrue(user.getRefreshTokens().isEmpty());

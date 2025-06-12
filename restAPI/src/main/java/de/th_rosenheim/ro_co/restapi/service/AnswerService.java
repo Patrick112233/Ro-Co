@@ -13,7 +13,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -97,7 +97,8 @@ public class AnswerService {
         Answer answer = answerRepository.findById(id).orElseThrow(() -> new ValidationException("Answer not found"));
         boolean isUserAllowedToDelete = (user.isVerified() && Objects.equals(answer.getAuthor().getId(), user.getId())) || user.getRole().equals("ADMIN");
         if (!isUserAllowedToDelete) {
-            throw new AuthenticationException("User not allowed to delete this answer") {};
+            throw new LockedException("User not allowed to delete this answer");
+
         }
 
         answerRepository.deleteById(id);

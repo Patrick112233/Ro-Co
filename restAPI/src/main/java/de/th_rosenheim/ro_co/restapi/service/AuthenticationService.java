@@ -8,7 +8,6 @@ import de.th_rosenheim.ro_co.restapi.repository.RefreshTokenRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import de.th_rosenheim.ro_co.restapi.model.Role;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,7 +36,8 @@ public class AuthenticationService {
 
     public AuthenticationService(
             UserRepository userRepository,
-            AuthenticationManager authenticationManager, RefreshTokenRepository refreshTokenRepository,
+            AuthenticationManager authenticationManager,
+            RefreshTokenRepository refreshTokenRepository,
             JwtService jwtService,
             UserService userService
     ) {
@@ -108,9 +108,9 @@ public class AuthenticationService {
         return Optional.of(validationCheck(response));
     }
 
-    public void deAuthenticate(String userMail, InRefreshToken inRefreshToken) {
+    public void deAuthenticate(String userMail, InRefreshTokenDto inRefreshTokenDto) {
 
-        if (userMail == null || userMail.isEmpty() || inRefreshToken == null || inRefreshToken.getRefreshToken() == null || inRefreshToken.getRefreshToken().isEmpty()) {
+        if (userMail == null || userMail.isEmpty() || inRefreshTokenDto == null || inRefreshTokenDto.getRefreshToken() == null || inRefreshTokenDto.getRefreshToken().isEmpty()) {
             throw new IllegalArgumentException("Invalid input: userMail and refreshToken must not be null or empty");
         }
 
@@ -121,7 +121,7 @@ public class AuthenticationService {
         }
 
         try {
-            refreshTokenRepository.deleteByTokenHash(hashToken(inRefreshToken.getRefreshToken()));
+            refreshTokenRepository.deleteByTokenHash(hashToken(inRefreshTokenDto.getRefreshToken()));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException("No refresh token found", e);
         }

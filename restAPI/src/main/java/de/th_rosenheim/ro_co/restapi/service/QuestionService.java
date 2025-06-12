@@ -5,16 +5,14 @@ import de.th_rosenheim.ro_co.restapi.dto.InStatusQuestionDto;
 import de.th_rosenheim.ro_co.restapi.dto.OutQuestionDto;
 import de.th_rosenheim.ro_co.restapi.mapper.QuestionMapper;
 import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
-import de.th_rosenheim.ro_co.restapi.model.Answer;
 import de.th_rosenheim.ro_co.restapi.model.Question;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.QuestionRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -82,7 +80,8 @@ public class QuestionService {
         Question question = questionRepository.findById(id).orElseThrow(() -> new ValidationException("Question not found"));
         boolean isUserAllowedToDelete = (user.isVerified() && Objects.equals(question.getAuthor().getId(), user.getId())) || user.getRole().equals("ADMIN");
         if (!isUserAllowedToDelete) {
-            throw new AuthenticationException("User not allowed to delete this question") {};
+
+            throw new LockedException("User not allowed to delete this question");
         }
 
         questionRepository.deleteById(id);

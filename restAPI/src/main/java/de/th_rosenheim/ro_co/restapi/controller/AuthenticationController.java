@@ -72,10 +72,10 @@ public class AuthenticationController {
 
     @Operation(summary = "Logout a user", description = "Tels the API that the user wants to logout. This will invalidate the JWT token.")
     @PostMapping("/logout")
-    public ResponseEntity<LoginOutDto> logout(@Valid @RequestBody InRefreshToken inRefreshToken) {
+    public ResponseEntity<LoginOutDto> logout(@Valid @RequestBody InRefreshTokenDto inRefreshTokenDto) {
         String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
-            authenticationService.deAuthenticate(userMail, inRefreshToken);
+            authenticationService.deAuthenticate(userMail, inRefreshTokenDto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
