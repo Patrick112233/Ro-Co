@@ -1,6 +1,6 @@
 
 import { render, screen } from "@testing-library/react";
-import CustomNavbar from "@/component/Navbar.jsx";
+import CustomNavbar from "@/component/navbar.jsx";
 import axios from "@/util/axios.js";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
