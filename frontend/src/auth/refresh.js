@@ -13,31 +13,33 @@ function getRefresh() {
 export { getRefresh };
 
 /**
- * Querries a new JWT access token via the refresh token.
- * @type {createRefreshParamInterface<unknown>}
+ * Queries a new JWT access token via the refresh token.
+ * @param {object} param
+ * @returns {Promise<object>}
  */
-const refresh = createRefresh({
-    interval: 600, //in seconds
-    refreshApiCallback: async (param) => {
-        try {
-            const response = await axios.post("auth/refresh", param, {
-                headers: {'Authorization': `Bearer ${param.refreshToken}`}
-            })
+export async function refreshApiCallback(param) {
+    try {
+        const response = await axios.post("auth/refresh", param, {
+            headers: { 'Authorization': `Bearer ${param.refreshToken}` }
+        });
 
-            return {
-                isSuccess: true,
-                newAuthToken: response.data?.token,
-                newAuthTokenExpireIn: response.data?.tokenExpiresIn,
-                newRefreshTokenExpiresIn: response.data?.refreshTokenExpiresIn
-            }
-        }
-        catch(error){
-            console.error(error)
-            return {
-                isSuccess: false
-            }
-        }
+        return {
+            isSuccess: true,
+            newAuthToken: response.data?.token,
+            newAuthTokenExpireIn: response.data?.tokenExpiresIn,
+            newRefreshTokenExpiresIn: response.data?.refreshTokenExpiresIn
+        };
+    } catch (error) {
+        console.error(error);
+        return {
+            isSuccess: false
+        };
     }
-})
+}
+
+const refresh = createRefresh({
+    interval: 600, // in seconds
+    refreshApiCallback
+});
 
 export default refresh;

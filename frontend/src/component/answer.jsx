@@ -99,6 +99,7 @@ const Answer = ({ id, description, createdAt, author, questionID , onDelete}) =>
                         <button
                             className="btn btn-link position-relative "
                             type="button"
+                            data-testid="deleteAnswerButton"
                             onClick={() => deleteAnswer(id)}
                         >
                             <FontAwesomeIcon icon={faTrash} style={{ fontSize: '1rem', color: 'gray' }} />

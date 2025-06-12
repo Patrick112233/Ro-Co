@@ -26,41 +26,48 @@ const CustomNavbar = () => {
      * Initialy fetches username and profile image
      */
     useEffect(() => {
-        //get general user data
-        axios.get(
-            '/user/' + auth.uid,
-            {
-                headers: {'Content-Type': 'application/json',  'Authorization': authHeader},
-                withCredentials: true
-            }
-            ).then((response) => {
-                if (response.status !== 200) {
-                    throw new Error('Cant fetch user data');
-                }
-                setUserName(response.data?.username);
-            }).catch( (error) => {
-                handleErrorLogout(error, navigate, signOut, authHeader);
-            });
+        fetchData();
+    }, [authHeader, auth.uid]);
 
-        //get profile image
-        axios.get(
-            '/user/' + auth.uid + '/icon',
-            {
-                    headers: {'Content-Type': 'application/json',  'Authorization': authHeader},
+
+    /**
+     * Fetches user data and profile image from the API.
+     * @returns {Promise<void>}
+     */
+    const fetchData = async () => {
+        try {
+            // get general user data
+            const userResponse = await axios.get(
+                '/user/' + auth.uid,
+                {
+                    headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
                     withCredentials: true
                 }
-            ).then((response) => {
-                if (response.status !== 200) {
-                    throw new Error('Cant fetch user data');
-                }
-                const blob = new Blob([response.data], { type: 'image/svg+xml' });
-                const localUrl = URL.createObjectURL(blob);
-                setProfileImage(localUrl);
-            }).catch( (error) => {
-                handleErrorLogout(error, navigate, signOut, authHeader);
-            });
+            );
+            if (userResponse.status !== 200) {
+                throw new Error('Cant fetch user data');
+            }
+            setUserName(userResponse.data?.username);
 
-    }, [authHeader, auth.uid ]);
+            // get profile image
+            const iconResponse = await axios.get(
+                '/user/' + auth.uid + '/icon',
+                {
+                    headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+                    withCredentials: true
+                }
+            );
+            if (iconResponse.status !== 200) {
+                throw new Error('Cant fetch user data');
+            }
+            const blob = new Blob([iconResponse.data], { type: 'image/svg+xml' });
+            const localUrl = URL.createObjectURL(blob);
+            setProfileImage(localUrl);
+        } catch (error) {
+            handleErrorLogout(error, navigate, signOut, authHeader);
+        }
+    };
+
 
     /**
      * logs user out (deletes cookies + rout to login)
@@ -80,7 +87,7 @@ const CustomNavbar = () => {
                             className="rounded-circle"
                             style={{ width: '40px', height: '40px' }}
                         />
-                    <a className="navbar-brand text-white fw-bold ms-2">{userName}</a>
+                    <h3 className="navbar-brand text-white fw-bold ms-2">{userName}</h3>
                 </div>
                     <div className="d-flex justify-content-end btn-group">
                         <button className="btn me-2" type="button" onClick={handleLogoutClick}>

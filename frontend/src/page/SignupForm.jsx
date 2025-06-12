@@ -238,7 +238,7 @@ const SignupForm = () => {
                           />
 
                           {!isUsernameAvailable && userName.length > 3 && (
-                              <div className="text-danger">
+                              <div data-testid="takenMsg" className="text-danger">
                                 Username is already taken!
                               </div>
                           )}
@@ -306,19 +306,19 @@ const SignupForm = () => {
                               placeholder={"Confirm your Password"}
                           />
                           {!validMatch &&(
-                              <div className="text-danger">
+                              <div data-testid="pwdMissmatch" className="text-danger">
                                 <FontAwesomeIcon icon={faInfoCircle}/> Must match the first password input field.
                               </div>
                           )}
                         </>
                   )}
                   <br/>
-                    <Button type={'submit'} disabled={!validMail || !validPwd || (isSignUp && !validMatch)} className="btn-secondary">
+                    <Button type={'submit'} data-testid="submit" disabled={!validMail || !validPwd || (isSignUp && !validMatch)} className="btn-secondary">
                       {isSignUp ? 'Sign Up' : 'Login'}
                     </Button>
                 </Form>
               <div className={"d-flex justify-content-center"}>
-                <Button variant="link" onClick={toggleSignUp} className="text-white ">
+                <Button variant="link" data-testid="toggleBtn" onClick={toggleSignUp} className="text-white ">
                   {isSignUp ? 'Already have an account? Login': 'Create an account'}
                 </Button>
               </div>

@@ -266,7 +266,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                     </p>
                 </div>
                 <div className="d-flex justify-content-center">
-                    <button className="btn btn-link p-0" onClick={() => setIsOpen(!isOpen)}>
+                    <button className="btn btn-link p-0" onClick={() => setIsOpen(!isOpen)} data-testid="OpenAnswerButton">
                         {isOpen ? (<FontAwesomeIcon icon={faChevronUp}/>) : (<FontAwesomeIcon icon={faChevronDown}/>)}
                     </button>
                 </div>
@@ -275,6 +275,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                             <button
                             className="btn btn-link mr-2"
                             type="button"
+                            data-testid="ToggleAnsweredButton"
                             onClick={() => toggleAnswered(id)}
                             >
                                 <FontAwesomeIcon
@@ -290,6 +291,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                         <button
                             className="btn btn-link ml-1"
                             type="button"
+                            data-testid="DeleteQuestionButton"
                             onClick={() => deleteQuestion(id)}
                         >
                             <FontAwesomeIcon
@@ -316,6 +318,7 @@ const Question = ({ id, title, description, createdAt, answered, author, onDelet
                                     className="form-control border-dark-subtle"
                                     id="textAreaExample"
                                     rows="4"
+                                    data-testid="comment"
                                     style={{ background: '#fff' }}
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}

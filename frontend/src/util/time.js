@@ -4,8 +4,16 @@
  * @returns {string} strings like 1 min, 2 hours or 1 month evenen years
  */
 function formatTimespan(createdAt) {
+
     const now = new Date();
     const createdDate = new Date(createdAt);
+    if (
+        isNaN(createdDate.getTime()) ||
+        createdDate.getFullYear() <= 2020 || // before development started
+        createdDate > now // in the future is invalid
+    ) {
+        throw new Error("Invalid date format: " + createdAt);
+    }
     const diffInMinutes = Math.floor((now - createdDate) / (1000 * 60)); // Minuten direkt berechnen
 
     if (diffInMinutes < 60) {
@@ -18,7 +26,7 @@ function formatTimespan(createdAt) {
         return `${days} ${days === 1 ? 'day' : 'days'}`;
     } else if (diffInMinutes < 525600) {
         const months = Math.floor(diffInMinutes / 43200);
-        return `${months} ${months === 1 ? 'month' : 'montsh'}`;
+        return `${months} ${months === 1 ? 'month' : 'months'}`;
     } else {
         const years = Math.floor(diffInMinutes / 525600);
         return `${years} ${years === 1 ? 'year' : 'years'}`;

@@ -7,6 +7,7 @@ import useSignOut from "react-auth-kit/hooks/useSignOut";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import axios from "@/util/axios.js";
+import handleErrorLogout from "@/util/ErrorHandler.jsx";
 
 
 /**
@@ -19,6 +20,7 @@ const AskQuestion = (refreshHook) => {
     const navigate = useNavigate();
     const authHeader = useAuthHeader();
     const auth = useAuthUser()
+    const signOut = useSignOut();
     const [askPopUp, setAskPopUp] = useState(false)
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
@@ -57,10 +59,10 @@ const AskQuestion = (refreshHook) => {
                 setAskPopUp(false);
                 refreshHook.refreshHook(newQuestions);
             } else {
-                console.error("Fehler beim Posten der Frage:", response.status);
+                throw new Error("Fehler beim Posten der Frage: " + response.status);
             }
         } catch (error) {
-            console.error("Fehler beim Posten der Frage:", error);
+            handleErrorLogout(error, navigate, signOut, authHeader);
         }
     };
 
@@ -78,6 +80,7 @@ const AskQuestion = (refreshHook) => {
                     <input
                         className="form-control border-dark-subtle"
                         id="subject"
+                        data-testid="subject"
                         style={{ background: '#fff' }}
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
@@ -87,6 +90,7 @@ const AskQuestion = (refreshHook) => {
                     <textarea
                         className="form-control border-dark-subtle flex-grow-1"
                         id="question"
+                        data-testid="question"
                         style={{ background: '#fff', resize: 'none' }}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
