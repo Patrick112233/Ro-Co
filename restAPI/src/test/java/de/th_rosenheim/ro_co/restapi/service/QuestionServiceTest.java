@@ -156,11 +156,10 @@ class QuestionServiceTest {
                 .thenReturn(new PageImpl<>(List.of(qWithInvalidAuthor)));
         assertThrows(ValidationException.class, () -> questionService.getAllQuestions(0, 10));
 
-        // UserId darf im Autor nicht enthalten sein (OutUseAnonymDto)
-        when(questionRepository.findAll(any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(q1)));
+        // User Email nicht im Author-Objekt da es anonymisiert wird
+        when(questionRepository.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(List.of(q1)));
         var result = questionService.getAllQuestions(0, 10);
-        assertNull(result.getContent().get(0).getAuthor().getId());
+        assertFalse(result.getContent().get(0).getAuthor().toString().contains("mail"));
     }
 
     @Test
@@ -319,7 +318,7 @@ class QuestionServiceTest {
         assertThrows(IllegalArgumentException.class, () -> questionService.updateStatusQuestion(qId, statusDto, userMail));
 
         // Invalid Author (displayName null)
-        User invalidAuthor = instantiateUser("mail@test.com", "Pw123456!", "displayName", "USER");
+        User invalidAuthor = instantiateUser(userMail, "Pw123456!", "displayName", "USER");
         Field field = null;
         try {
             field = User.class.getDeclaredField("displayName");
@@ -332,7 +331,8 @@ class QuestionServiceTest {
         invalidAuthor.setVerified(true);
         question.setAuthor(invalidAuthor);
         when(questionRepository.findById(qId)).thenReturn(Optional.of(question));
-        assertThrows(IllegalArgumentException.class, () -> questionService.updateStatusQuestion(qId, statusDto, userMail));
+        when(userRepository.findByEmail(userMail)).thenReturn(Optional.of(invalidAuthor));
+        assertThrows(ValidationException.class, () -> questionService.updateStatusQuestion(qId, statusDto, userMail));
     }
 
     // Hilfsmethode zum Klonen eines Question-Objekts (flach)

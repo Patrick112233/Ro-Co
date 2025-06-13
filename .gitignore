@@ -55,7 +55,8 @@ restAPI/target
 *.p12
 *.csr
 
-
-
-
-
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

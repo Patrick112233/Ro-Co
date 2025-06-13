@@ -12,7 +12,6 @@
     "test:ui": "vitest --ui",
     "start": "vite",
     "coverage": "vitest run --coverage",
-    "cy:open": "cypress open"
   },
   "dependencies": {
     "@auth-kit/react-router": "^3.1.3",
