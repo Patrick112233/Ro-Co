@@ -40,7 +40,7 @@ public class QuestionService {
             throw new IllegalArgumentException("Question not found");
         }
         OutQuestionDto result = QuestionMapper.INSTANCE.questionToOutQuestionDto(question.get());
-        result.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(question.get().getAuthor()));
+        result.setAuthor(validationCheck(UserMapper.INSTANCE.userToOutUseAnonymDto(question.get().getAuthor())));
         return Optional.of(validationCheck(result));
     }
 
@@ -51,7 +51,7 @@ public class QuestionService {
         PageRequest pageRequest = PageRequest.of(page, size);
         return questionRepository.findAll(pageRequest).map(question -> {
             OutQuestionDto dto = QuestionMapper.INSTANCE.questionToOutQuestionDto(question);
-            dto.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(question.getAuthor()));
+            dto.setAuthor(validationCheck(UserMapper.INSTANCE.userToOutUseAnonymDto(question.getAuthor())));
             return validationCheck(dto);
         });
     }
@@ -67,7 +67,7 @@ public class QuestionService {
         Question questionDB = questionRepository.insert(question);
 
         OutQuestionDto response = QuestionMapper.INSTANCE.questionToOutQuestionDto(questionDB);
-        response.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(author));
+        response.setAuthor(validationCheck(UserMapper.INSTANCE.userToOutUseAnonymDto(author)));
         return Optional.of(validationCheck(response));
     }
 
@@ -105,7 +105,7 @@ public class QuestionService {
         questionDB.setAnswered(statusQuestionDto.isAnswered());
         questionDB = questionRepository.save(questionDB);
         OutQuestionDto response = QuestionMapper.INSTANCE.questionToOutQuestionDto(questionDB);
-        response.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(user.get()));
+        response.setAuthor(validationCheck(UserMapper.INSTANCE.userToOutUseAnonymDto(user.get())));
         return Optional.of(validationCheck(response));
     }
 }

@@ -56,8 +56,8 @@ public class UserService {
         return repository.findAll(pageRequest).map(user -> validationCheck(UserMapper.INSTANCE.userToOutUserDto(user)));
     }
 
-    public OutUserDto updateUser(String id, InUserDto updatedUser)  throws IllegalArgumentException {
-        if (id == null || !ObjectId.isValid(id)) {
+    public OutUserDto updateUser(String email, InUserDto updatedUser)  throws IllegalArgumentException {
+        if (email == null) {
             throw new IllegalArgumentException("ID is invalid");
         }
         if (updatedUser == null) {
@@ -65,9 +65,9 @@ public class UserService {
         }
 
         // Check if the user exists before saving
-        Optional<User> existingUser = repository.findById(id);
+        Optional<User> existingUser = repository.findByEmail(email);
         if (existingUser.isEmpty()) {
-            throw new IllegalArgumentException("User with ID " + id + " does not exist");
+            throw new IllegalArgumentException("User does not exist");
         }
         //update properties
         User newUser = existingUser.get();
@@ -85,8 +85,11 @@ public class UserService {
         repository.deleteById(id);
     }
 
-    public void resetPassword(String id,  LoginUserDto loginUserDto) {
-        Optional<User> user = repository.findById(id);
+    public void resetPassword(String email,  LoginUserDto loginUserDto) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        Optional<User> user = repository.findByEmail(email);
         if (user.isEmpty()) {
             throw new UsernameNotFoundException("User with email " + loginUserDto.getEmail() + " not found");
         }

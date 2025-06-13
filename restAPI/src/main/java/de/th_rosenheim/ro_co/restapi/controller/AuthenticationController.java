@@ -49,6 +49,7 @@ public class AuthenticationController {
      * @param username the username to check
      * @return ResponseEntity indicating availability status
      */
+    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", allowedHeaders = "*")
     @Operation(summary = "Check username availability", description = "Check if a username is already taken. Returns 200 if available, 409 if taken, and 400 for invalid input.")
     @GetMapping(value = "/signup/username")
     public ResponseEntity<Void> checkUserName(@RequestParam String username) {

@@ -198,43 +198,43 @@ class UserServiceTest {
 
     @Test
     void updateUser() {
-        String validId = "507f1f77bcf86cd799439011";
+        String vaildEmail = "test@example.com";
         var inUserDto = new InUserDto("ValidName");
-        var existingUser = instantiateUser("test@example.com", "Pw123456!", "OldName","USER");
-        existingUser.setId(validId);
+        var existingUser = instantiateUser(vaildEmail, "Pw123456!", "OldName","USER");
+        existingUser.setId("507f1f77bcf86cd799439011");
         existingUser.setVerified(true);
 
         // 1. Normalfall: User wird aktualisiert
-        when(repository.findById(validId)).thenReturn(Optional.of(existingUser));
-        assertDoesNotThrow(() -> userService.updateUser(validId, inUserDto));
+        when(repository.findByEmail(vaildEmail)).thenReturn(Optional.of(existingUser));
+        assertDoesNotThrow(() -> userService.updateUser("test@example.com", inUserDto));
         verify(repository, times(1)).save(any(User.class));
 
         // ungültige input
-        assertThrows(IllegalArgumentException.class,() -> userService.updateUser("1", inUserDto));
-        assertThrows(IllegalArgumentException.class,() -> userService.updateUser(validId, null));
+        assertThrows(IllegalArgumentException.class,() -> userService.updateUser("", inUserDto));
+        assertThrows(IllegalArgumentException.class,() -> userService.updateUser(vaildEmail, null));
 
 
         // 3. User nicht gefunden
-        when(repository.findById(validId)).thenReturn(Optional.empty());
-        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(validId, inUserDto));
+        when(repository.findByEmail(vaildEmail)).thenReturn(Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(vaildEmail, inUserDto));
         verify(repository, times(1)).save(any(User.class)); // kein weiterer Aufruf
 
         // 4. Ungültiger User (ungültige E-Mail)
         var invalidEmailDto = new InUserDto("ValidName");
 
-        var invalidUser = instantiateUser("Not@mail.com", "Pw123456!", "ValidName","USER");
+        var invalidUser = instantiateUser("test@example.com", "Pw123456!", "ValidName","USER");
         Field field = null;
         try {
             field = User.class.getDeclaredField("email");
             field.setAccessible(true);
-            field.set(invalidUser, "not.valid.email");
+            field.set(invalidUser, "test.example.com");
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        invalidUser.setId(validId);
+        invalidUser.setId("507f1f77bcf86cd799439011");
         invalidUser.setVerified(true);
-        when(repository.findById(validId)).thenReturn(Optional.of(invalidUser));
-        assertThrows(ValidationException.class, () -> userService.updateUser(validId, invalidEmailDto));
+        when(repository.findByEmail(vaildEmail)).thenReturn(Optional.of(invalidUser));
+        assertThrows(ValidationException.class, () -> userService.updateUser(vaildEmail, invalidEmailDto));
         verify(repository, times(1)).save(any(User.class)); // kein weiterer Aufruf
     }
 
@@ -253,21 +253,22 @@ class UserServiceTest {
     @Test
     void resetPassword() {
         // 1. Normalfall: Passwort wird aktualisiert
-        var user = instantiateUser("test@example.com", "OldPassword1!", "TestUser","USER");
+        String validEmail = "test@example.com";
+        var user = instantiateUser(validEmail, "OldPassword1!", "TestUser","USER");
         user.setVerified(true);
         var oldPasswordHash = user.getPassword(); // Speichere altes Passwort
 
-        var loginUserDto = new LoginUserDto("test@example.com", "NewPassword1!");
-        when(repository.findById("1")).thenReturn(Optional.of(user));
-        assertDoesNotThrow(() -> userService.resetPassword("1",loginUserDto));
+        var loginUserDto = new LoginUserDto(validEmail, "NewPassword1!");
+        when(repository.findByEmail(validEmail)).thenReturn(Optional.of(user));
+        assertDoesNotThrow(() -> userService.resetPassword(validEmail,loginUserDto));
         assertNotEquals("NewPassword1!", user.getPassword());
         assertNotEquals(user.getPassword(), oldPasswordHash);
         verify(repository, times(1)).save(user);
 
         // 3. User nicht gefunden
         var notFoundDto = new LoginUserDto("notfound@example.com", "NewPassword1!");
-        when(repository.findById("1")).thenReturn(Optional.empty());
-        assertThrows(UsernameNotFoundException.class, () -> userService.resetPassword("1",notFoundDto));
+        when(repository.findByEmail("notfound@example.com")).thenReturn(Optional.empty());
+        assertThrows(UsernameNotFoundException.class, () -> userService.resetPassword("notfound@example.com",notFoundDto));
         verify(repository, times(1)).save(user); // kein weiterer Aufruf
     }
 }

@@ -67,11 +67,11 @@ public class UserController {
 
 
 
-    //@TODO: instead of using ID spring security username should be used to only allow users to update their own data
     @Operation(summary = "Update user by ID", description = "Update an existing user's details using their unique ID.")
-    @PutMapping("/{id}")
-    public ResponseEntity<OutUserDto> updateUser(@PathVariable String id, @Valid @RequestBody InUserDto updatedUser){
-        OutUserDto outUserDTO = this.userService.updateUser(id,updatedUser);
+    @PutMapping("/")
+    public ResponseEntity<OutUserDto> updateUser(@Valid @RequestBody InUserDto updatedUser){
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName(); //ensure that only the user can update their own data
+        OutUserDto outUserDTO = this.userService.updateUser(userMail,updatedUser);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(outUserDTO.getId())
@@ -79,11 +79,11 @@ public class UserController {
         return ResponseEntity.created(uri).body(outUserDTO);
     }
 
-    //@TODO: instead of using ID spring security username should be used to only allow users to update their own data
-    @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
-    @PutMapping("/{id}/password")
-    public ResponseEntity<Object> resetPassword(@PathVariable String id, @Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
-        this.userService.resetPassword(id, loginUserDto);
+    @Operation(summary = "Reste Password", description = "Resets the password for the currently authenticated user.")
+    @PutMapping("/password")
+    public ResponseEntity<Object> resetPassword(@Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName(); //ensure that only the user can update their own data
+        this.userService.resetPassword(userMail, loginUserDto);
         return ResponseEntity.ok().build();
     }
 

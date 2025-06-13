@@ -95,10 +95,9 @@ class UserControllerTest {
 
         OutUserDto updatedUser = new OutUserDto("1", "Jon Doe", "USER", "not@mail.com", true);
         InUserDto inUserDto = new InUserDto("Jon Doe");
-        String id = "1";
-        Mockito.when(userService.updateUser("1", inUserDto)).thenReturn(updatedUser);
+        Mockito.when(userService.updateUser("not@mail.com", inUserDto)).thenReturn(updatedUser);
 
-        mockMvc.perform(put("/api/v1/user/" + id)
+        mockMvc.perform(put("/api/v1/user/")
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"username\":\"" + inUserDto.getUsername() + "\"}")
         .with(csrf()))
@@ -110,14 +109,14 @@ class UserControllerTest {
 
 
         //test with invalid data
-        mockMvc.perform(put("/api/v1/user/" + id)
+        mockMvc.perform(put("/api/v1/user/")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"username\":\"\"}")
                         .with(csrf())) // Empty username
                 .andExpect(status().isBadRequest());
 
         //test with non-existing user
-        Mockito.when(userService.updateUser("2", inUserDto)).thenThrow(new IllegalArgumentException("User not found"));
+        Mockito.when(userService.updateUser("not@mail.com", inUserDto)).thenThrow(new IllegalArgumentException("User not found"));
         mockMvc.perform(put("/api/v1/user/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"username\":\"" + inUserDto.getUsername() + "\"}")
@@ -130,27 +129,27 @@ class UserControllerTest {
     @Test
     @WithMockUser(username = "not@mail.com", roles = {"USER"}, password ="Test1234!")
     void testResetPassword() throws Exception {
-        LoginUserDto inUserDto = new LoginUserDto("not@mail.com", "OldPW1234!");
-        String id = "1";
+        String email = "not@mail.com";
+        LoginUserDto inUserDto = new LoginUserDto(email, "OldPW1234!");
         String newPassword = "newPwd1234!";
 
-        Mockito.doNothing().when(userService).resetPassword(id, inUserDto);
-        mockMvc.perform(put("/api/v1/user/" + id + "/password")
+        Mockito.doNothing().when(userService).resetPassword(email, inUserDto);
+        mockMvc.perform(put("/api/v1/user/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"" + inUserDto.getEmail() + "\", \"password\":\"" + newPassword + "\"}")
                 .with(csrf()))
                 .andExpect(status().isOk());
 
         // Test with invalid email
-        mockMvc.perform(put("/api/v1/user/" + id + "/password")
+        mockMvc.perform(put("/api/v1/user/password")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"invalid-email\", \"password\":\"" + newPassword + "\"}")
+                .content("{\"email\":\"not.mail.com\", \"password\":\"" + newPassword + "\"}")
                 .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorMessage").exists());
 
         // Test with empty password
-        mockMvc.perform(put("/api/v1/user/" + id + "/password")
+        mockMvc.perform(put("/api/v1/user/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"" + inUserDto.getEmail() + "\", \"password\":\"\"}")
                 .with(csrf()))
@@ -159,7 +158,7 @@ class UserControllerTest {
 
         // Test with non-existing user
         Mockito.doThrow(new UsernameNotFoundException("User not found")).when(userService).resetPassword(Mockito.anyString(), Mockito.any(LoginUserDto.class));
-        mockMvc.perform(put("/api/v1/user/" + id + "/password")
+        mockMvc.perform(put("/api/v1/user/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"" + inUserDto.getEmail() + "\", \"password\":\"" + newPassword + "\"}")
                 .with(csrf()))

@@ -1,30 +1,35 @@
 
 services:
 
-  #frontend:
-  #  build: ./env/Dockerfile_REST
-  #  ports:
-  #    - "8080:8080"
-  #  volumes:
-  #    - ./target:.
-  #  command: [ "java","-jar","/app.jar" ]
-  #  links:
-  #    - rest_api
-  #  depends_on:
-  #    - rest_api
-
-
-  rest_api:
-    build: ./restAPI
+  frontend:
+    build: ./frontend/.
     ports:
-      - "8081:8081"
-    env_file:
-      - config_own.env
+      - "3000:3000"
+    links:
+      - backend
+    depends_on:
+      - backend
+
+  testbox:
+    image: alpine
+    command: tail -f /dev/null
+    depends_on:
+      - backend
+
+  backend:
+    build: ./restAPI/.
+    ports:
+      - "8080:8080"
     environment:
+      - STOREPASS=123456
+      - KEYPASS=123456
+      - CORS_ORIGIN_ALLOWED=http://localhost:3000
+      - MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
+      - MONGO_INITDB_ROOT_USERNAME=backend
       - MONGO_INITDB_HOST=mongo
+      - MONGO_INITDB_PORT=27017
     links:
       - mongo
-      - mongo-express
     depends_on:
       mongo:
         condition: service_healthy
@@ -34,8 +39,10 @@ services:
     restart: always
     ports:
       - "27017:27017"
-    env_file:
-      - config_own.env
+    command: mongod --quiet --logpath /dev/null 
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
+      - MONGO_INITDB_ROOT_USERNAME=backend
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - db-data:/data/db
@@ -45,13 +52,13 @@ services:
       timeout: 5s
       retries: 5
 
-  mongo-express:
-    image: mongo-express
-    restart: always
-    ports:
-      - "8082:8081"
-    env_file:
-      - config_own.env
+#  mongo-express:
+#    image: mongo-express
+#    restart: always
+#    ports:
+#      - "8082:8081"
+#    env_file:
+#      - config_own.env
 
 volumes:
   db-data:
