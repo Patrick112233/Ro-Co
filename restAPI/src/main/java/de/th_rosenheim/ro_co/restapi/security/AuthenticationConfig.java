@@ -80,7 +80,6 @@ public class AuthenticationConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        System.out.println("CORS allowed origin: " + allowedOrigin); // oder Logger verwenden
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOrigins(Arrays.asList(allowedOrigin));
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

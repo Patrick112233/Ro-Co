@@ -40,18 +40,8 @@ class AuthenticationServiceTest {
         authenticationManager = mock(AuthenticationManager.class);
         refreshTokenRepository = mock(RefreshTokenRepository.class);
         jwtService = mock(JwtService.class);
-        userService = mock(UserService.class);
 
-        /*
-                    UserRepository userRepository,
-            AuthenticationManager authenticationManager,
-            RefreshTokenRepository refreshTokenRepository,
-            JwtService jwtService,
-            UserService userService
-
-         */
-
-        authenticationService = new AuthenticationService(userRepository, authenticationManager, refreshTokenRepository, jwtService, userService);
+        authenticationService = new AuthenticationService(userRepository, authenticationManager, refreshTokenRepository, jwtService);
         java.lang.reflect.Field userField;
         java.lang.reflect.Field authField;
         java.lang.reflect.Field refreshTokenField;
@@ -73,10 +63,6 @@ class AuthenticationServiceTest {
             jwtServiceField.setAccessible(true);
             jwtServiceField.set(authenticationService, jwtService);
 
-            // Set userService field
-            Field userServiceField = AuthenticationService.class.getDeclaredField("userService");
-            userServiceField.setAccessible(true);
-            userServiceField.set(authenticationService, userService);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

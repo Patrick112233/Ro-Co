@@ -89,7 +89,7 @@ class AuthenticationControllerIT {
     private int port;
 
     private String getBaseUrl() {
-        return "https://localhost:" + port;
+        return "http://localhost:" + port;
     }
 
     @Test
@@ -127,6 +127,7 @@ class AuthenticationControllerIT {
      */
     @Test
     void testSignupAndLoginAndGetUser() throws UnirestException, JSONException {
+        Unirest.config().reset();
         Unirest.config().verifySsl(false);
         Unirest.config().addDefaultHeader("Content-Type", "application/json");
         Unirest.config().connectTimeout(5000);

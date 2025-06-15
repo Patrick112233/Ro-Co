@@ -42,12 +42,11 @@ public class UserController {
 
     @Operation(summary = "Gets the current user icon", description = "Register a new user by providing user details as JSON.")
     @GetMapping("/{id}/icon")
-    public ResponseEntity<byte[]> getUserIcon(@PathVariable String id) {
+    public ResponseEntity<byte[]> getUserIcon(@PathVariable String id) throws IOException {
         byte[] imageData = null;
-        try {
-            imageData = userService.getUserIcon(id);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        imageData = userService.getUserIcon(id);
+        if (imageData == null || imageData.length == 0) {
+            return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok()
                 .header("Content-Type", "image/svg+xml")
@@ -56,10 +55,13 @@ public class UserController {
 
 
     @Operation(summary = "Generate new user Icon", description = "Generates a new user icon")
-    @PutMapping("/{id}/icon")
+    @PutMapping("/icon")
     public ResponseEntity<byte[]> resetUserIcon() throws IOException, UsernameNotFoundException {
         String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
         byte[] imageData = userService.generateUserIcon(userMail);
+        if (imageData == null || imageData.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok()
                 .header("Content-Type", "image/svg+xml")
                 .body(imageData);

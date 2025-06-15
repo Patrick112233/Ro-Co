@@ -3,7 +3,6 @@ package de.th_rosenheim.ro_co.restapi.model;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
-import java.util.List;
 
 import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;

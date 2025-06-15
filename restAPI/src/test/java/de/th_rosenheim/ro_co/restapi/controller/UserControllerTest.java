@@ -23,13 +23,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.io.IOException;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 //@AutoConfigureMockMvc(addFilters = false)
 //@WebMvcTest(UserController.class)
@@ -230,4 +231,59 @@ class UserControllerTest {
         mockMvc.perform(delete("/api/v1/user/" + id))
                 .andExpect(status().isForbidden());
     }
+
+
+    @Test
+    @WithMockUser(username = "not@mail.com", roles = {"USER"}, password ="Test1234!")
+    void getUserIcon() throws Exception {
+        // Normalfall: gibt Bild zurück
+        byte[] svgBytes = "<svg>icon</svg>".getBytes();
+        Mockito.when(userService.getUserIcon("1")).thenReturn(svgBytes);
+
+        mockMvc.perform(get("/api/v1/user/1/icon"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "image/svg+xml"))
+                .andExpect(content().bytes(svgBytes));
+
+        // Fehlerfall: IOException
+        Mockito.when(userService.getUserIcon("2")).thenThrow(new IOException("IO error"));
+        mockMvc.perform(get("/api/v1/user/2/icon"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorMessage").exists());
+
+        // Rückgabe ist null
+        Mockito.when(userService.getUserIcon("3")).thenReturn(null);
+        mockMvc.perform(get("/api/v1/user/3/icon"))
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    @WithMockUser(username = "not@mail.com", roles = {"USER"}, password ="Test1234!")
+    void resetUserIcon() throws Exception {
+        // Normalfall: neues Icon wird generiert
+        byte[] svgBytes = "<svg>newicon</svg>".getBytes();
+        Mockito.when(userService.generateUserIcon("not@mail.com")).thenReturn(svgBytes);
+
+        mockMvc.perform(put("/api/v1/user/icon").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "image/svg+xml"))
+                .andExpect(content().bytes(svgBytes));
+
+        // Prüfen, ob generateUserIcon mit richtiger Mail aufgerufen wurde
+        Mockito.verify(userService).generateUserIcon("not@mail.com");
+
+        // Rückgabe ist null
+        Mockito.when(userService.generateUserIcon("not@mail.com")).thenReturn(null);
+        mockMvc.perform(put("/api/v1/user/icon").with(csrf()))
+                .andExpect(status().isNotFound());
+
+        // Fehlerfall: IOException
+        Mockito.when(userService.generateUserIcon("not@mail.com")).thenThrow(new IOException("IO error"));
+        mockMvc.perform(put("/api/v1/user/icon").with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorMessage").exists());
+    }
+
+
 }

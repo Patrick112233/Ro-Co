@@ -51,7 +51,7 @@ test('Test Question and Answer', async ({ page }) => {
   //check if question is visible
   await expect(page.getByRole('heading', { name: 'Anfängerfrage: Wie baut man' }).first()).toBeVisible();
   await expect(page.getByText('Hey zusammen,\n\nich bin Student und möchte mich an meinem ersten kleinen Metallbauprojekt versuchen – einem selbstgebauten Briefkasten aus Metall. Ich hab noch nie sowas gemacht, finde die Idee aber spannend und würde mich über Tipps oder Anleitungen total freuen').first()).toBeVisible();
-  await expect(page.getByTestId('DeleteQuestionButton')).toBeVisible();
+  await expect(page.getByTestId('DeleteQuestionButton').first()).toBeVisible();
   await expect(page.getByTestId('ToggleAnsweredButton').first()).toBeVisible();
 
   //check weather toggle answered button works
@@ -60,12 +60,31 @@ test('Test Question and Answer', async ({ page }) => {
   const color = await page.locator('.svg-inline--fa.fa-circle-check').first().evaluate(
     (el) => getComputedStyle(el).color
   );
-  expect(['green', 'rgb(0, 128, 0)']).toContain(color);
+  //wait for no traffic
+  // Wait for the color of the icon to update to green
+  await page.waitForFunction(() => {
+    const el = document.querySelector('.svg-inline--fa.fa-circle-check');
+    if (!el) return false;
+    const color = getComputedStyle(el).color;
+    return color === 'green' || color === 'rgb(0, 128, 0)';
+  });
+
+  await page.getByTestId('ToggleAnsweredButton').first().click();
+
+  //wait for icon to torn not green
+  await page.waitForFunction(() => {
+    const el = document.querySelector('.svg-inline--fa.fa-circle-check');
+    if (!el) return false;
+    const color = getComputedStyle(el).color;
+    return color !== 'green' && color !== 'rgb(0, 128, 0)';
+  });
+
+  /*expect(['green', 'rgb(0, 128, 0)']).toContain(color);
   await page.getByTestId('ToggleAnsweredButton').first().click();
   const color_gray = await page.locator('.svg-inline--fa.fa-circle-check').first().evaluate(
     (el) => getComputedStyle(el).color
   );
-  expect(['green', 'rgb(0, 128, 0)']).not.toContain(color_gray);
+  expect(['green', 'rgb(0, 128, 0)']).not.toContain(color_gray);*/
 
   await page.getByTestId('DeleteQuestionButton').first().click();
   await expect(page.getByRole('heading', { name: 'Anfängerfrage: Wie baut man' })).not.toBeVisible();

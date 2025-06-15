@@ -1,6 +1,5 @@
 package de.th_rosenheim.ro_co.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.th_rosenheim.ro_co.restapi.model.Role;
 import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
@@ -73,6 +72,7 @@ class UserControllerIT {
     @BeforeAll
     static void setupUnirest() {
         mongoDBContainer.start();
+        Unirest.config().reset();
         Unirest.config().verifySsl(false);
         Unirest.config().addDefaultHeader("Content-Type", "application/json");
         Unirest.config().connectTimeout(5000);
@@ -96,7 +96,7 @@ class UserControllerIT {
             u.setVerified(true);
             return userRepository.insert(u);
         });
-        userId = user.getId();
+        this.userId = user.getId();
 
         // Admin anlegen
         String adminEmail = "admin@mail.com";
@@ -106,7 +106,7 @@ class UserControllerIT {
             a.setVerified(true);
             return userRepository.insert(a);
         });
-        adminId = admin.getId();
+        this.adminId = admin.getId();
 
         // Login User
         if (accessToken == null) {
@@ -140,11 +140,11 @@ class UserControllerIT {
     }
 
     private String getBaseUrl() {
-        return "https://localhost:" + port;
+        return "http://localhost:" + port;
     }
 
     @Test
-    void testGetAndGenerateUserIcon() throws Exception {
+    void testGetAndGenerateUserIcon() {
         // Sicherstellen, dass kein Icon gesetzt ist
         User user = userRepository.findById(userId).orElseThrow();
         assertNull(user.getImage() );
@@ -165,7 +165,7 @@ class UserControllerIT {
         assertEquals(icon1, icon2);
 
         // chaneg Icon
-        HttpResponse<byte[]> putIconResp = Unirest.put(getBaseUrl() + "/api/v1/user/" + userId + "/icon")
+        HttpResponse<byte[]> putIconResp = Unirest.put(getBaseUrl() + "/api/v1/user/icon")
                 .header("Authorization", "Bearer " + accessToken)
                 .asBytes();
         assertEquals(200, putIconResp.getStatus());

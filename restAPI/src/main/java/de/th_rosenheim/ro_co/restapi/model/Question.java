@@ -1,6 +1,5 @@
 package de.th_rosenheim.ro_co.restapi.model;
 
-import de.th_rosenheim.ro_co.restapi.mapper.QuestionMapper;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -34,7 +33,7 @@ public class Question {
     private User author;
 
     @DocumentReference(lazy = true)
-    private transient List<Answer> answers = new ArrayList<>();
+    private List<Answer> answers = new ArrayList<>();
 
 
 

@@ -30,7 +30,6 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
-    private final UserService userService;
     final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
 
@@ -38,14 +37,11 @@ public class AuthenticationService {
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
             RefreshTokenRepository refreshTokenRepository,
-            JwtService jwtService,
-            UserService userService
-    ) {
+            JwtService jwtService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
-        this.userService = userService;
     }
 
     public Optional<OutUserDto> signup( RegisterUserDto input) throws NonUniqueException, IllegalArgumentException {

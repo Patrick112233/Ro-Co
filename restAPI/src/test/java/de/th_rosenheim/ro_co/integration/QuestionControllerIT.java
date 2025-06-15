@@ -79,6 +79,7 @@ class QuestionControllerIT {
     @BeforeAll
     static void setupUnirest() {
         mongoDBContainer.start();
+        Unirest.config().reset();
         Unirest.config().verifySsl(false);
         Unirest.config().addDefaultHeader("Content-Type", "application/json");
         Unirest.config().connectTimeout(5000);
@@ -122,7 +123,7 @@ class QuestionControllerIT {
     }
 
     private String getBaseUrl() {
-        return "https://localhost:" + port;
+        return "http://localhost:" + port;
     }
 
     @Test

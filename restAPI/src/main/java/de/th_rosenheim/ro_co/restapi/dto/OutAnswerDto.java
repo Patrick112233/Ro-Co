@@ -1,13 +1,11 @@
 package de.th_rosenheim.ro_co.restapi.dto;
 
-import de.th_rosenheim.ro_co.restapi.model.User;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.util.Date;
 

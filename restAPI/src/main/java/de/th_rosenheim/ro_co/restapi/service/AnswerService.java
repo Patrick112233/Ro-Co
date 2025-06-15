@@ -9,7 +9,6 @@ import de.th_rosenheim.ro_co.restapi.model.User;
 import de.th_rosenheim.ro_co.restapi.repository.AnswerRepository;
 import de.th_rosenheim.ro_co.restapi.repository.QuestionRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
-import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,7 +45,7 @@ public class AnswerService {
             throw new IllegalArgumentException("Answer not found");
         }
         OutAnswerDto result = AnswerMapper.INSTANCE.answerToOutAnswerDto(answer.get());
-        result.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(answer.get().getAuthor()));
+        result.setAuthor(validationCheck(UserMapper.INSTANCE.userToOutUseAnonymDto(answer.get().getAuthor())));
         result.setQuestionID(answer.get().getQuestion().getId());
         return Optional.of(validationCheck(result));
 
@@ -65,12 +64,12 @@ public class AnswerService {
         return answerRepository.findAllByQuestion(question.get(),pageRequest).map(answer -> {
             OutAnswerDto dto = AnswerMapper.INSTANCE.answerToOutAnswerDto(answer);
             dto.setQuestionID(question.get().getId());
-            dto.setAuthor(UserMapper.INSTANCE.userToOutUseAnonymDto(answer.getAuthor()));
+            dto.setAuthor(validationCheck(UserMapper.INSTANCE.userToOutUseAnonymDto(answer.getAuthor())));
             return validationCheck(dto);
         });
     }
 
-    public Optional<OutAnswerDto> addAnswer(@Valid InAnswerDto answerDto) {
+    public Optional<OutAnswerDto> addAnswer(InAnswerDto answerDto) {
         if (answerDto == null) {
             throw new ValidationException("Answer DTO cannot be null");
         }
