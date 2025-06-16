@@ -174,8 +174,8 @@ jobs:
 #      run: npm install wait-on
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
-    - name: Start local environment with Docker Compose
-      run: docker compose up -d
+#    - name: Start local environment with Docker Compose
+#      run: docker compose up -d
 #    - uses: iFaxity/wait-on-action
 #      with:
 #        resource: http://localhost:3000
