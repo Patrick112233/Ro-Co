@@ -1,3 +1,4 @@
+# https://lachiejames.com/elevate-your-ci-cd-dockerized-e2e-tests-with-github-actions/#5-implementing-the-github-actions-pipeline
 name: Playwright Tests
 on:
   push:

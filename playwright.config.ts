@@ -91,5 +91,6 @@ export default defineConfig({
      command: 'docker compose up -d',
      url: 'http://localhost:3000',
      reuseExistingServer: !process.env.CI,
+     timeout: 420 * 1000, // 7 minutes
    },
 });
