@@ -12,10 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,7 @@ import java.util.Optional;
 @RestController
 public class UserController {
 
-    private final UserService userService;
+    private UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -38,10 +40,40 @@ public class UserController {
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Gets the current user icon", description = "Register a new user by providing user details as JSON.")
+    @GetMapping("/{id}/icon")
+    public ResponseEntity<byte[]> getUserIcon(@PathVariable String id) throws IOException {
+        byte[] imageData = null;
+        imageData = userService.getUserIcon(id);
+        if (imageData == null || imageData.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/svg+xml")
+                .body(imageData);
+    }
+
+
+    @Operation(summary = "Generate new user Icon", description = "Generates a new user icon")
+    @PutMapping("/icon")
+    public ResponseEntity<byte[]> resetUserIcon() throws IOException, UsernameNotFoundException {
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName();
+        byte[] imageData = userService.generateUserIcon(userMail);
+        if (imageData == null || imageData.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/svg+xml")
+                .body(imageData);
+    }
+
+
+
     @Operation(summary = "Update user by ID", description = "Update an existing user's details using their unique ID.")
-    @PutMapping("/{id}")
-    public ResponseEntity<OutUserDto> updateUser(@PathVariable String id, @Valid @RequestBody InUserDto updatedUser){
-        OutUserDto outUserDTO = this.userService.updateUser(id,updatedUser);
+    @PutMapping("/")
+    public ResponseEntity<OutUserDto> updateUser(@Valid @RequestBody InUserDto updatedUser){
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName(); //ensure that only the user can update their own data
+        OutUserDto outUserDTO = this.userService.updateUser(userMail,updatedUser);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(outUserDTO.getId())
@@ -49,10 +81,11 @@ public class UserController {
         return ResponseEntity.created(uri).body(outUserDTO);
     }
 
-    @Operation(summary = "Create a new user", description = "Add a new user to the system by providing user details as JSON.")
-    @PutMapping("/{id}/password")
-    public ResponseEntity<Object> resetPassword(@PathVariable String id, @Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
-        this.userService.resetPassword(id, loginUserDto);
+    @Operation(summary = "Reste Password", description = "Resets the password for the currently authenticated user.")
+    @PutMapping("/password")
+    public ResponseEntity<Object> resetPassword(@Valid @RequestBody LoginUserDto loginUserDto) throws UsernameNotFoundException {
+        String userMail = SecurityContextHolder.getContext().getAuthentication().getName(); //ensure that only the user can update their own data
+        this.userService.resetPassword(userMail, loginUserDto);
         return ResponseEntity.ok().build();
     }
 

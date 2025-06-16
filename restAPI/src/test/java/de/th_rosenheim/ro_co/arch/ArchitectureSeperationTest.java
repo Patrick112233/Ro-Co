@@ -45,7 +45,7 @@ public class ArchitectureSeperationTest {
     @ArchTest
     public static final ArchRule AllowedModelDependencies = classes()
             .that().resideInAPackage("..model..")
-            .should().onlyDependOnClassesThat().resideInAnyPackage(ArrayUtils.addAll(new String[]{"..model..", "..bson.."}, ALWAYS_ALLOWED_PACKAGES));
+            .should().onlyDependOnClassesThat().resideInAnyPackage(ArrayUtils.addAll(new String[]{"..model..", "..bson..", "..unirest..", "..mongodb.."}, ALWAYS_ALLOWED_PACKAGES));
 
 
     @ArchTest

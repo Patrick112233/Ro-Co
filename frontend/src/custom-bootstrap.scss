@@ -38,7 +38,8 @@ $navbar-dark-hover-color: $white;
 $pagination-disabled-color: $gray-300;
 $pagination-hover-bg: $gray-300;
 
-@use '../node_modules/bootstrap/scss/bootstrap' as bootstrap;
+@import '../node_modules/bootstrap/scss/bootstrap.scss';
+
 
 .body{
     margin-bottom: 70px !important;
@@ -55,5 +56,41 @@ $pagination-hover-bg: $gray-300;
 .slick-next:before {
     color:$primary !important;
 }
+
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-inner {
+    background: $white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    width: 70%;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Trennt Inhalte und Button */
+
+}
+.form-outline {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Nimmt den verfügbaren Platz ein */
+}
+
+
+
+
 
 

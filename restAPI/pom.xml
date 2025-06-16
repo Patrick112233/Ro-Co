@@ -35,6 +35,17 @@
         <sonar.organization>patrick112233</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.konghq</groupId>
+                <artifactId>unirest-java-bom</artifactId>
+                <version>4.4.5</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -114,9 +125,8 @@
         </dependency>
         <dependency>
             <groupId>com.konghq</groupId>
-            <artifactId>unirest-java</artifactId>
-            <version>2.3.14</version>
-            <scope>test</scope>
+            <artifactId>unirest-java-core</artifactId>
+            <version>4.4.5</version>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>

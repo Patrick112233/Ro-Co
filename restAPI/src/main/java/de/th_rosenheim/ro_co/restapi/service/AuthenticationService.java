@@ -4,6 +4,7 @@ import de.th_rosenheim.ro_co.restapi.exceptions.NonUniqueException;
 import de.th_rosenheim.ro_co.restapi.mapper.UserMapper;
 import de.th_rosenheim.ro_co.restapi.dto.*;
 import de.th_rosenheim.ro_co.restapi.model.User;
+import de.th_rosenheim.ro_co.restapi.repository.RefreshTokenRepository;
 import de.th_rosenheim.ro_co.restapi.repository.UserRepository;
 import de.th_rosenheim.ro_co.restapi.model.Role;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -15,6 +16,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
@@ -26,6 +28,7 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
     final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
@@ -33,10 +36,11 @@ public class AuthenticationService {
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
-            JwtService jwtService
-    ) {
+            RefreshTokenRepository refreshTokenRepository,
+            JwtService jwtService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
     }
 
@@ -49,7 +53,13 @@ public class AuthenticationService {
 
         user.setRole(Role.USER);
         user.setVerified(true); // default is false, set to true after email verification
-        user.setEncPassword(input.getPassword());
+        user.setPassword(input.getPassword());
+        try {
+            user.generateUserIcon();
+        } catch (IOException | IllegalArgumentException e) {
+            //ignore exception
+            logger.error(e.getMessage());
+        }
         validationCheck(user);
 
         User dbUser = userRepository.insert(user);
@@ -94,6 +104,25 @@ public class AuthenticationService {
         return Optional.of(validationCheck(response));
     }
 
+    public void deAuthenticate(String userMail, InRefreshTokenDto inRefreshTokenDto) {
+
+        if (userMail == null || userMail.isEmpty() || inRefreshTokenDto == null || inRefreshTokenDto.getRefreshToken() == null || inRefreshTokenDto.getRefreshToken().isEmpty()) {
+            throw new IllegalArgumentException("Invalid input: userMail and refreshToken must not be null or empty");
+        }
+
+        // Check if the user exists and is verified
+        Optional<User> user = userRepository.findByEmail(userMail);
+        if (user.isEmpty() || !user.get().isVerified()) {
+            throw new UsernameNotFoundException("Invalid email or password");
+        }
+
+        try {
+            refreshTokenRepository.deleteByTokenHash(hashToken(inRefreshTokenDto.getRefreshToken()));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException("No refresh token found", e);
+        }
+    }
+
     public Optional<LoginOutDto> refresh(String authHeader) throws UsernameNotFoundException {
 
         if (!jwtService.isBearer(authHeader)) {
@@ -128,8 +157,6 @@ public class AuthenticationService {
         }
 
         String jwtToken = jwtService.generateToken(user.get());
-
-
         OutUserDto outUserDTO = UserMapper.INSTANCE.userToOutUserDto(user.get());
         LoginOutDto response = new LoginOutDto(outUserDTO);
         response.setToken(jwtToken);
@@ -146,4 +173,6 @@ public class AuthenticationService {
         Long count = userRepository.countByDisplayName(displayName);
         return count == null || count <= 0;
     }
+
+
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
+import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserMapperTest {
@@ -16,7 +17,7 @@ class UserMapperTest {
 
     @Test
     void userToOutUserDto() {
-        User user = new User("test@mail.com", "Pw123456!", "Max Mustermann", "USER");
+        User user = instantiateUser("test@mail.com", "Pw123456!", "Max Mustermann", "USER");
         user.setId("507f1f77bcf86cd799439011");
         user.setVerified(true);
 

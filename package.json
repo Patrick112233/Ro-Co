@@ -1,0 +1,25 @@
+{
+  "name": "ro-co",
+  "version": "1.0.0",
+  "description": "",
+  "main": "mongo-init.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Patrick112233/Ro-Co.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Patrick112233/Ro-Co/issues"
+  },
+  "homepage": "https://github.com/Patrick112233/Ro-Co#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "@types/node": "^24.0.1"
+  },
+  "dependencies": {
+    "chance": "^1.1.13"
+  }
+}

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Optional;
 
+import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;
         import static org.mockito.Mockito.*;
 
@@ -26,7 +27,7 @@ class MongoAuthUserDetailServiceTest {
     @Test
     void loadUserByUsername_allCases() {
         // Normalfall mit gültigen Werten
-        User validUser = new User("test@example.com", "Pw123456!", "TestUser","USER");
+        User validUser = instantiateUser("test@example.com", "Pw123456!", "TestUser","USER");
         validUser.setVerified(true);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(validUser));
         assertEquals(validUser, service.loadUserByUsername("test@example.com"));
