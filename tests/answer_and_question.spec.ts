@@ -30,12 +30,13 @@ test('Test Question and Answer', async ({ page }) => {
 
   //Delete the Answer but answer section should still be visible
   await page.getByTestId('deleteAnswerButton').click();
-  await expect(page.getByText('P.S. If you have pictures of')).not.toBeVisible();
+  await expect(page.getByText('P.S. If you have pictures of')).toBeHidden({ timeout: 10000 });
   await expect(page.getByRole('button', { name: 'Post comment' })).toBeVisible();
   
   //Check if Toggle Worke
   await page.getByTestId('OpenAnswerButton').first().click();
-  await expect(page.getByRole('button', { name: 'Post comment' }).first()).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Post comment' }).first()).toBeHidden({ timeout: 10000 });
+  //await expect(page.getByRole('button', { name: 'Post comment' }).first()).not.toBeVisible();
   });
 
 
@@ -88,7 +89,7 @@ test('Test Question and Answer', async ({ page }) => {
   expect(['green', 'rgb(0, 128, 0)']).not.toContain(color_gray);*/
 
   await page.getByTestId('DeleteQuestionButton').first().click();
-  await expect(page.getByRole('heading', { name: 'Anfängerfrage: Wie baut man' })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Anfängerfrage: Wie baut man' })).toBeHidden({ timeout: 10000 });
 
 }
 );

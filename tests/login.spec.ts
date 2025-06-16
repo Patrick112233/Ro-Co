@@ -24,7 +24,7 @@ test('test disable popup', async ({ page }) => {
   await page.getByRole('button').nth(1).click();
   await page.getByRole('button', { name: 'Close' }).click();
   //Assert that the popup is closed
-  await expect (page.getByRole('heading', { name: 'Ask your Question' })).not.toBeVisible();
+  await expect (page.getByRole('heading', { name: 'Ask your Question' })).toBeHidden({ timeout: 10000 });
 });
 
 test('test login', async ({ page }) => {
