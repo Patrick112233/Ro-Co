@@ -176,8 +176,11 @@ jobs:
       run: npx playwright install --with-deps
     - name: Start local environment with Docker Compose
       run: docker compose up -d
-    - name: Wait for site to be online
-      run: wait-on http://localhost:3000
+    - uses: iFaxity/wait-on-action
+      with:
+        resource: http://localhost:3000
+#    - name: Wait for site to be online
+#      run: npx wait-on http://localhost:3000
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v4
