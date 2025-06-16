@@ -12,8 +12,8 @@ test('Test Question and Answer', async ({ page }) => {
   //Check for question visibility and delete and toggle answered btn
   await expect(page.getByRole('heading', { name: 'Design and Construction of a' }).first()).toBeVisible();
   await expect(page.getByText('I’m a student and completely').first()).toBeVisible();
-  await expect(page.getByTestId('DeleteQuestionButton')).toBeVisible();
-  await expect(page.getByTestId('ToggleAnsweredButton')).toBeVisible();
+  await expect(page.getByTestId('DeleteQuestionButton').first()).toBeVisible();
+  await expect(page.getByTestId('ToggleAnsweredButton').first()).toBeVisible();
   //check weather image User Avatar is visible
   await expect(page.getByRole('img', { name: 'User Avatar' }).nth(1)).toBeVisible();
 
@@ -35,7 +35,7 @@ test('Test Question and Answer', async ({ page }) => {
   
   //Check if Toggle Worke
   await page.getByTestId('OpenAnswerButton').first().click();
-  await expect(page.getByRole('button', { name: 'Post comment' })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Post comment' }).first()).not.toBeVisible();
   });
 
 
@@ -49,7 +49,8 @@ test('Test Question and Answer', async ({ page }) => {
   await page.getByRole('button', { name: 'Post' }).click();
 
   //check if question is visible
-  await expect(page.getByRole('heading', { name: 'Anfängerfrage: Wie baut man' }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Anfängerfrage/ })).toBeVisible();
+  //await expect(page.getByRole('heading', { name: 'Anfängerfrage: Wie baut man' }).first()).toBeVisible();
   await expect(page.getByText('Hey zusammen,\n\nich bin Student und möchte mich an meinem ersten kleinen Metallbauprojekt versuchen – einem selbstgebauten Briefkasten aus Metall. Ich hab noch nie sowas gemacht, finde die Idee aber spannend und würde mich über Tipps oder Anleitungen total freuen').first()).toBeVisible();
   await expect(page.getByTestId('DeleteQuestionButton').first()).toBeVisible();
   await expect(page.getByTestId('ToggleAnsweredButton').first()).toBeVisible();
