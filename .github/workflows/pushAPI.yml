@@ -170,15 +170,15 @@ jobs:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
-    - name: Install wait-on
-      run: npm install wait-on
+#    - name: Install wait-on
+#      run: npm install wait-on
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Start local environment with Docker Compose
       run: docker compose up -d
-    - uses: iFaxity/wait-on-action
-      with:
-        resource: http://localhost:3000
+#    - uses: iFaxity/wait-on-action
+#      with:
+#        resource: http://localhost:3000
 #    - name: Wait for site to be online
 #      run: npx wait-on http://localhost:3000
     - name: Run Playwright tests
