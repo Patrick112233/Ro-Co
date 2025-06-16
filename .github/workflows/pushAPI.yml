@@ -158,3 +158,29 @@ jobs:
       working-directory: ./frontend
     - run: npm run coverage
       working-directory: ./frontend
+
+
+  e2eTests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright wait-on install --with-deps
+        - name: Start local environment with Docker Compose
+          run: docker compose up -d
+        - name: Wait for site to be online
+          run: npx wait-on http://localhost:3000
+        - name: Run Playwright tests
+          run: npx playwright test
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
