@@ -1,36 +1,51 @@
-# Ro-Co
+# Ro-Co 😃🎓
+
+The **Ro-Co** (Rosenheim Community) app is a community-driven web platform that connects students and enables interdisciplinary knowledge exchange. 🤝
+
+We aim to offer students a safe space to ask questions about their studies and private projects, encouraging a maker mentality by leveraging the enormous shared knowledge. As an open-source project, we want to encourage students to contribute and help shape the platform to their needs, creating a central platform that connects students. 🌱✨
+
+---
+
+## Get Started 🚀
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/Patrick112233/Ro-Co.git
+   cd Ro-Co
+   ```
+
+2. **Start the application using Docker Compose:**
+
+   ```bash
+   docker-compose up --build
+   ```
+   The first time you run this command, it may take a while to download and build all dependencies. ⏳
+
+3. **Access the application:**
+
+   Open your browser and go to [http://localhost:3000/](http://localhost:3000/) to use the Ro-Co platform. 🌐
 
 
-## Trouble Shooting:
-- Include lombok 
-  ./mvnw org.apache.maven.plugins:maven-install-plugin:3.1.3:install-file -Dfile='RestAPI/lib/lombok.jar' -DgroupId='org.projectlombok' -DartifactId='lombok' -Dversion='1.18.36+d9d0767b' -Dpackaging='jar'
+## License 📄
 
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
+## Contributing 🤗
 
-# Doc
-### Reference Documentation
-For further reference, please consider the following sections:
+Contributions are welcome! To contribute:
+- Fork the repository
+- Create a new branch for your feature or bugfix
+- Submit a pull request with a clear description of your changes
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.4/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.4/maven-plugin/build-image.html)
-* [Spring Web](https://docs.spring.io/spring-boot/3.4.4/reference/web/servlet.html)
-* [Vaadin](https://vaadin.com/docs)
-* [Spring Data MongoDB](https://docs.spring.io/spring-boot/3.4.4/reference/data/nosql.html#data.nosql.mongodb)
+For questions or suggestions, feel free to open an issue on GitHub. 💡
 
-### Guides
-The following guides illustrate how to use some features concretely:
+---
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
-* [Creating CRUD UI with Vaadin](https://spring.io/guides/gs/crud-with-vaadin/)
-* [Accessing Data with MongoDB](https://spring.io/guides/gs/accessing-data-mongodb/)
+## Documentation 📚
 
+Full documentation is available at: [https://ro-co.readthedocs.io/en/latest/](https://ro-co.readthedocs.io/en/latest/)
 
-
-# Test Concept:
-Unit tests with Mockito: https://site.mockito.org/
-Integration test with testcontainers: https://testcontainers.com/
-Archunit: https://www.archunit.org/
+> **Note:**
+> This project is under active development. 🛠️
 
