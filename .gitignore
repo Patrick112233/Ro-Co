@@ -60,3 +60,7 @@ restAPI/target
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+
+# Read the docs
+docs/build/*
