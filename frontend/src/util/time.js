@@ -5,9 +5,12 @@
  */
 function formatTimespan(createdAt) {
 
-    const now =  Date.now();
     const createdDate = new Date(createdAt);
-    const delatTimeSkew = 1001; // 1 second skew
+
+    const now =  Date.now();
+    /*const delatTimeSkew = 1001; // 1 second skew
+
+    Cuases sporadic errors
     if (
         isNaN(createdDate.getTime()) ||
         createdDate.getFullYear() <= 2020 || // before development started
@@ -15,8 +18,8 @@ function formatTimespan(createdAt) {
     ) {
         throw new Error("Invalid date format: " + createdAt);
     }
-    const effectiveNow = createdDate > now ? createdDate : now;
-    const diffInMinutes = Math.floor((effectiveNow - createdDate) / (1000 * 60)); // Minuten direkt berechnen
+    const effectiveNow = createdDate > now ? createdDate : now;*/
+    const diffInMinutes = Math.floor((now - createdDate) / (1000 * 60)); // Minuten direkt berechnen
 
     if (diffInMinutes < 60) {
         return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`;
