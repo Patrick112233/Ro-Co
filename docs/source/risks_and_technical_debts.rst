@@ -39,10 +39,13 @@ Backend Risks
    * - Lack of XSS protection for data output
      - Data returned by the backend is not fully sanitized for XSS. Improvements are in progress.
      - WIP
+   * - Lack of Email verification
+     - The backend does not currently verify user email addresses, which may lead to issues with account security and spam.
+     - WIP
    * - Lack of encryption (SSL/TLS postponed)
      - Communication is not encrypted as SSL/TLS is not yet enabled in the current deployment.
      - WIP
-    * Lack of zero-trust policy
+   * - Lack of zero-trust policy
      - The backend does not yet implement zero-trust security (especcialy encryption and autentification of database) principles, which may expose it to unauthorized access.
      - Open
 
