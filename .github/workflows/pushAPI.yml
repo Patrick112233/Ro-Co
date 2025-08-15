@@ -182,6 +182,7 @@ jobs:
         retention-days: 30
 
   APIVulnabilityScan:
+    needs: buildAPI
     runs-on: ubuntu-latest
     name: Scan the webapplication
     steps:
@@ -224,3 +225,4 @@ jobs:
           fail_action: true
           allow_issue_writing: true
           issue_title: '${{ github.workflow }} ${{ github.ref }} ZAP Scan Result'
+          cmd_options: '-l WARN'
