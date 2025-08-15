@@ -59,11 +59,12 @@ public class AuthenticationConfig {
 
         var filter = http
                 //.requiresChannel(channel -> channel.anyRequest().requiresSecure())
-                .headers(headers -> headers.xssProtection(
-                    xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK)
-                    ).contentSecurityPolicy(
-                        cps -> cps.policyDirectives("script-src 'self'")
-                    )
+                .headers(headers -> headers
+                    .xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+                    .contentSecurityPolicy(cps -> cps.policyDirectives("script-src 'self'"))
+                    .addHeaderWriter((request, response) -> {
+                        response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+                    })
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)

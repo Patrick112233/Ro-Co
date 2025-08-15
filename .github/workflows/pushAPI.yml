@@ -225,4 +225,4 @@ jobs:
           fail_action: true
           allow_issue_writing: true
           issue_title: '${{ github.workflow }} ${{ github.ref }} ZAP Scan Result'
-          cmd_options: '-l WARN'
+          cmd_options: '-l LOW'
