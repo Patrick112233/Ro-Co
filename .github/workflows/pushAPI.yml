@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java CI with Maven
+name: Push CI
 
 on:
   push:
@@ -180,3 +180,53 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+
+  APIVulnabilityScan:
+    needs: buildAPI
+    runs-on: ubuntu-latest
+    name: Scan the webapplication
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start local environment with Docker Compose
+        run: docker compose up -d
+      - name: Wait for API to be ready
+        run: |
+          for i in {1..30}; do
+            curl --silent --fail http://localhost:8080/api.html && break
+            echo "Waiting for API..."
+            sleep 2
+          done
+      - name: Create Test User
+        run: |
+          curl --location 'http://localhost:8080/api/v1/auth/signup' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "username": "None",
+              "email": "not@mail.com",
+              "password": "Test1234!"
+          }'
+      - name: Login Test User and Store Token in Environment Variable
+        run: |
+          LOGIN_RESPONSE=$(curl --location 'http://localhost:8080/api/v1/auth/login' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "email": "not@mail.com",
+              "password": "Test1234!"
+          }')
+          echo "Login Response: $LOGIN_RESPONSE"
+          ZAP_AUTH_HEADER_VALUE=$(echo "$LOGIN_RESPONSE" | jq -r '.token')
+          echo "ZAP_AUTH_HEADER_VALUE=$ZAP_AUTH_HEADER_VALUE" >> $GITHUB_ENV
+      - name: API Scan
+        uses: zaproxy/action-api-scan@v0.9.0
+        with:
+          format: openapi
+          target: 'http://localhost:8080/v3/api-docs'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_action: true
+          allow_issue_writing: true
+          issue_title: '${{ github.workflow }} ${{ github.ref }} ZAP Scan Result'
+          cmd_options: '-l WARN'
+      - name: Display ZAP Scan Report in Workflow Summary
+        run: |
+          echo "### ZAP Scan Report" >> $GITHUB_STEP_SUMMARY
+          cat report_md.md >> $GITHUB_STEP_SUMMARY
