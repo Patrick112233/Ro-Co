@@ -9,7 +9,7 @@ services:
       - backend
     depends_on:
       - backend
-
+      
   backend:
     build: ./restAPI/.
     ports:
@@ -18,8 +18,8 @@ services:
       - STOREPASS=123456
       - KEYPASS=123456
       - CORS_ORIGIN_ALLOWED=http://localhost:3000
-      - MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
-      - MONGO_INITDB_ROOT_USERNAME=backend
+      #- MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
+      #- MONGO_INITDB_ROOT_USERNAME=backend
       - MONGO_INITDB_HOST=mongo
       - MONGO_INITDB_PORT=27017
     links:
@@ -33,15 +33,19 @@ services:
     restart: always
     ports:
       - "27017:27017"
-    command: mongod --quiet --logpath /dev/null 
+    command: mongod --quiet --config /etc/mongod.conf --auth 
     environment:
-      - MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
-      - MONGO_INITDB_ROOT_USERNAME=backend
+      #- MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
+      #- MONGO_INITDB_ROOT_USERNAME=backend
+      - MONGO_ROCO_CERT_STRING='CN=RoCoDB,OU=RoCoDB,O=RoCo,L=Rosenheim,ST=BY,C=GE'
     volumes:
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./db/mongod.conf:/etc/mongod.conf
+      - ./db/out/:/etc/ssl/:ro
+      #- ./db/mongod.log:/var/log/mongodb/mongod.log
+      - ./db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - db-data:/data/db
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      test: ["CMD", "mongosh", "--tls", "--tlsCAFile", "/etc/ssl/RoCoRootCA.pem", "--tlsCertificateKeyFile", "/etc/ssl/RoCoDB.pem", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -54,6 +54,9 @@ restAPI/target
 *.pem
 *.p12
 *.csr
+*.key
+*.srl
+*.jks
 
 # Playwright
 /test-results/

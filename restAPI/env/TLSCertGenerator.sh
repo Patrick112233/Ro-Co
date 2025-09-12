@@ -1,3 +1,4 @@
+#/bin/bash
 keytoolPath=$(which keytool)
 if [ -z "$keytoolPath" ]; then
   echo "keytool not found in PATH"
