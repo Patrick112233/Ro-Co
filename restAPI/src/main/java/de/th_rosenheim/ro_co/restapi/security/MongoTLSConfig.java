@@ -102,6 +102,8 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
 
             if (x509User != null && !x509User.isBlank()) {
                 settingsBuilder.credential(MongoCredential.createMongoX509Credential(x509User));
+            } else {
+                throw new IllegalStateException("MongoDB X.509 user DN not configured; cannot authenticate");
             }
 
             MongoClientSettings settings = settingsBuilder.build();

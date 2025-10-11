@@ -1,10 +1,15 @@
-#/bin/bash
+#!/usr/bin/env bash
 # This script creates a self-signed root certificate, a user certificate, and a database certificate.
 # The root certificate signs the user and database certificates, and only PEM files are generated.
 # ECC (Elliptic Curve Cryptography) is used
 
+set -euo pipefail
+
+# Always operate relative to this script's directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Create the output folder
-OUT_DIR="out"
+OUT_DIR="$SCRIPT_DIR/out"
 [ -d "$OUT_DIR" ] && rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 

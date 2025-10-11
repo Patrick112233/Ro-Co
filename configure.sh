@@ -2,7 +2,8 @@
 
 # Configure local developer certificates for Ro-Co
 # - Runs db/Certs.sh to generate self-signed dev certs
-# - Copies RoCoAPI.pem and RoCoRootCA.pem into restAPI/src/main/resources/certs
+# - Copies RoCoAPI.pem and RoCoRootCA.pem into restAPI/src/main/resources/certs 
+# - Copies RoCoAPI.pem and RoCoRootCA.pem into restAPI/src/test/resources/certs 
 # - Overwrites existing files and creates folders if needed
 #
 # IMPORTANT: This is a developer setup using self-signed certificates.
@@ -35,6 +36,7 @@ REPO_ROOT="$SCRIPT_DIR"
 DB_CERTS_SCRIPT="$REPO_ROOT/db/Certs.sh"
 DB_OUT_DIR="$REPO_ROOT/db/out"
 DEST_DIR_MAIN="$REPO_ROOT/restAPI/src/main/resources/certs"
+DEST_DIR_TEST="$REPO_ROOT/restAPI/src/test/resources/certs"
 
 API_PEM="RoCoAPI.pem"
 ROOT_CA_PEM="RoCoRootCA.pem"
@@ -65,6 +67,21 @@ cp -f "$DB_OUT_DIR/$ROOT_CA_PEM" "$DEST_DIR_MAIN/$ROOT_CA_PEM"
 echo
 info "Certificates placed in application resources:"
 ls -l "$DEST_DIR_MAIN/$API_PEM" "$DEST_DIR_MAIN/$ROOT_CA_PEM" || true
+
+# Also copy to test resources
+echo
+info "Preparing destination folder: $DEST_DIR_TEST"
+mkdir -p "$DEST_DIR_TEST"
+
+info "Copying $API_PEM -> $DEST_DIR_TEST/$API_PEM (overwrite)"
+cp -f "$DB_OUT_DIR/$API_PEM" "$DEST_DIR_TEST/$API_PEM"
+
+info "Copying $ROOT_CA_PEM -> $DEST_DIR_TEST/$ROOT_CA_PEM (overwrite)"
+cp -f "$DB_OUT_DIR/$ROOT_CA_PEM" "$DEST_DIR_TEST/$ROOT_CA_PEM"
+
+echo
+info "Certificates placed in test resources:"
+ls -l "$DEST_DIR_TEST/$API_PEM" "$DEST_DIR_TEST/$ROOT_CA_PEM" || true
 
 echo
 warn "These self-signed developer certificates are for local development only."
