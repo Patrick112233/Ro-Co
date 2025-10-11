@@ -1,24 +1,18 @@
+package de.th_rosenheim.ro_co.restapi.security;
+
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.nio.charset.StandardCharsets;
-
-import com.mongodb.client.MongoClient;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
+import org.mockito.MockedConstruction;
+
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
-
 import javax.net.ssl.SSLContext;
-
-import de.th_rosenheim.ro_co.restapi.security.MongoTLSConfig;
-
-package de.th_rosenheim.ro_co.restapi.security;
-
 
 
 
@@ -73,12 +67,13 @@ public class MongoTLSConfigTest {
     public void setUp() {
         mongoTLSConfig = new MongoTLSConfig();
         // Set required fields via reflection
-        ReflectionTestUtils.setField(mongoTLSConfig, "mongoDbUri", "mongodb://localhost:27017/testdb");
         ReflectionTestUtils.setField(mongoTLSConfig, "mongoDbName", "testdb");
         ReflectionTestUtils.setField(mongoTLSConfig, "caFileName", "ca.pem");
         ReflectionTestUtils.setField(mongoTLSConfig, "certificateKeyFileName", "api.pem");
         ReflectionTestUtils.setField(mongoTLSConfig, "keyPWD", "testpassword");
         ReflectionTestUtils.setField(mongoTLSConfig, "secure", true);
+        ReflectionTestUtils.setField(mongoTLSConfig, "mongoDbPort", "1234");
+        ReflectionTestUtils.setField(mongoTLSConfig, "mongoDbHost", "testmongo");
     }
 
     @Test
@@ -86,28 +81,30 @@ public class MongoTLSConfigTest {
         assertEquals("testdb", mongoTLSConfig.getDatabaseName());
     }
 
-    @Test
-    public void testMongoClientThrowsWhenSSLContextFails() {
-        MongoTLSConfig configSpy = Mockito.spy(mongoTLSConfig);
-        try {
-            doThrow(new RuntimeException("SSL error")).when(configSpy).createSSLContext();
-            configSpy.mongoClient();
-            fail("Expected IllegalStateException");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("Failed to create SSLContext"));
-        }
-    }
 
     @Test
     public void testCreateSSLContext() throws Exception {
-        // Mock the MongoTLSConfig class
-        MongoTLSConfig config = new MongoTLSConfig();
 
-        ReflectionTestUtils.setField(config, "caFileName", new ByteArrayResource(ROOT_CA_PEM.getBytes(StandardCharsets.UTF_8)).getFilename());
-        ReflectionTestUtils.setField(config, "certificateKeyFileName", new ByteArrayResource(API_PEM.getBytes(StandardCharsets.UTF_8)).getFilename());
+        try (MockedConstruction<ClassPathResource> mockedClassPathResourceConst = mockConstruction(
+                ClassPathResource.class,
+                (mock, context) -> {
+                    if (context.arguments().contains("ca.pem")) {
+                        when(mock.getInputStream()).thenReturn(
+                                new ByteArrayResource(ROOT_CA_PEM.getBytes(StandardCharsets.UTF_8)).getInputStream());
+                    } else if (context.arguments().contains("api.pem")) {
+                        when(mock.getInputStream()).thenReturn(
+                                new ByteArrayResource(API_PEM.getBytes(StandardCharsets.UTF_8)).getInputStream());
+                    }
+                }
+        )) {
+            SSLContext sslContext = mongoTLSConfig.createSSLContext();
+            assertNotNull("SSLContext should not be null", sslContext);
+        }
 
-        SSLContext sslContext = config.createSSLContext();
-        assertNotNull("SSLContext should not be null", sslContext);
+
+
+
+
     }
 
     // Note: Integration tests for successful SSLContext creation would require actual PEM files in test resources.

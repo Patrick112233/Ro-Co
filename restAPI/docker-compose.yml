@@ -6,10 +6,13 @@ services:
     restart: always
     ports:
       - "27017:27017"
-    env_file:
-      - config_own.env
+    command: mongod --quiet --config /etc/mongod.conf --auth
+    environment:
+      - MONGO_ROCO_CERT_STRING='CN=RoCoDB,OU=RoCoDB,O=RoCo,L=Rosenheim,ST=BY,C=GE'
     volumes:
-      - ./src/main/resources/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./../db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./../db/mongod.conf:/etc/mongod.conf
+      - ./../db/out/:/etc/ssl/:ro
       - db-data:/data/db
 
   mongo-express:

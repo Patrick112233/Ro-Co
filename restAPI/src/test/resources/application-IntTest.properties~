@@ -17,6 +17,7 @@ spring.data.mongodb.auto-index-creation= true
 
 # Enable ssl/tls verification
 security.enabled=false
+security.x509.user=C=GE,ST=BY,L=Rosenheim,O=RoCo,OU=RoCoAPI,CN=RoCoAPI
 security.keyPWD=${KEYPASS}
 tls.caFile.name=certs/RoCoCA.pem
 tls.certFile.name=certs/RoCoAPI.pem

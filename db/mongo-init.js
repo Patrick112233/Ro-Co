@@ -1,5 +1,5 @@
 //use admin
-
+print("Start RoCoDB.");
 const root = process.env.MONGO_INITDB_ROOT_USERNAME;
 const pwd = process.env.MONGO_INITDB_ROOT_PASSWORD;
 const certificate_string = process.env.MONGO_ROCO_CERT_STRING; /*"CN=RoCoClient,OU=RoCoUser,O=RoCo,L=Rosenheim,ST=Bavaria,C=myCountry" */
@@ -20,7 +20,7 @@ db.createRole(
      role: "RoCoUser", 
      privileges: [
        {
-         actions: [ "changeStream", "createCollection", "createIndex", "createSearchIndex", "dbHash", "dropIndex", "dropSearchIndex", "find", "insert", "killCursors", "listCollections", "listIndexes", "listSearchIndexes", "remove", "update","updateSearchIndex" ],
+         actions: [ "changeStream", "createCollection", "createIndex", "dbHash", "dropIndex", "dropSearchIndex", "find", "insert", "killCursors", "listCollections", "listIndexes", "listSearchIndexes", "remove", "update","updateSearchIndex" ],
          resource: { db: "RoCoDB", collection: "" }
        }
      ],
@@ -31,13 +31,18 @@ db.createRole(
 
 // create user authenticated for RoCO Rest API via x.509 certificate
 // see https://www.mongodb.com/docs/manual/core/security-x.509/
-db.getSiblingDB("$external").runCommand(
-  {
-    createUser: certificate_string,
-    roles: [
-         { role: "RoCoUser", db: "RoCoDB" }
-    ],
-    writeConcern: { w: "majority" , wtimeout: 5000 }
-  }
-)
+if (certificate_string) {  
+  db.getSiblingDB("$external").runCommand(
+    {
+      createUser: certificate_string,
+      roles: [
+          { role: "RoCoUser", db: "RoCoDB" }
+      ],
+      writeConcern: { w: "majority" , wtimeout: 5000 }
+    }
+  )
+} else {
+  print("No MONGO_ROCO_CERT_STRING set. Skip creation of RoCoClient user.");
+}
+
 print("User created in RoCoDB.");

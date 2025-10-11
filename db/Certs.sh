@@ -26,7 +26,7 @@ openssl ecparam -genkey -name "$ECC_CURVE" -out "$OUT_DIR/RoCoRootCA.key"
 # Create certificate
 openssl req -x509 -new -nodes -key "$OUT_DIR/RoCoRootCA.key" -sha256 -days 3650 -out "$OUT_DIR/RoCoRootCA.pem" -subj "$ROOT_SUBJECT"
 
-# API certificate (signed by root)
+# API certificate / Client (signed by root)
 # Generate private key
 openssl ecparam -genkey -name "$ECC_CURVE" -out "$OUT_DIR/RoCoAPI.key"
 # Certificate signing request (CSR) 
@@ -34,15 +34,15 @@ openssl req -new -key "$OUT_DIR/RoCoAPI.key" -out "$OUT_DIR/RoCoAPI.csr" -subj "
 # Extend fields for DB authentication
 cat > "$OUT_DIR/api_cert_config.cnf" << EOL
 [ v3_req ]
-keyUsage = digitalSignature
-extendedKeyUsage = serverAuth
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth
 EOL
 # Sign the API certificate with the root certificate
 openssl x509 -req -in "$OUT_DIR/RoCoAPI.csr" -CA "$OUT_DIR/RoCoRootCA.pem" -CAkey "$OUT_DIR/RoCoRootCA.key" -CAcreateserial \
   -out "$OUT_DIR/RoCoAPI_cert.pem" -days 3650 -sha256 -extfile "$OUT_DIR/api_cert_config.cnf" -extensions v3_req
 cat "$OUT_DIR/RoCoAPI.key" "$OUT_DIR/RoCoAPI_cert.pem" > "$OUT_DIR/RoCoAPI.pem"
 
-# Database certificate (signed by root)
+# Database certificate / server (signed by root)
 # Generate private key
 openssl ecparam -genkey -name "$ECC_CURVE" -out "$OUT_DIR/RoCoDB.key"
 #  certificate signing request (CSR)
@@ -50,6 +50,8 @@ openssl req -new -key "$OUT_DIR/RoCoDB.key" -out "$OUT_DIR/RoCoDB.csr" -subj "$D
 
 cat > "$OUT_DIR/db_cert_config.cnf" << EOL
 [ v3_req ]
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
 [ alt_names ]
@@ -59,6 +61,6 @@ EOL
 
 # Sign the database certificate with the root certificate
 openssl x509 -req -in "$OUT_DIR/RoCoDB.csr" -CA "$OUT_DIR/RoCoRootCA.pem" -CAkey "$OUT_DIR/RoCoRootCA.key" -CAcreateserial \
-  -out "$OUT_DIR/RoCoDB_cert.pem" -days 3650 -sha256 --extfile "$OUT_DIR/db_cert_config.cnf" -extensions v3_req
+  -out "$OUT_DIR/RoCoDB_cert.pem" -days 3650 -sha256 -extfile "$OUT_DIR/db_cert_config.cnf" -extensions v3_req
 cat "$OUT_DIR/RoCoDB.key" "$OUT_DIR/RoCoDB_cert.pem" > "$OUT_DIR/RoCoDB.pem"
 
