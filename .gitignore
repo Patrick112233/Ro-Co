@@ -63,6 +63,12 @@ restAPI/target
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/playwright/.auth/
+
+
+# generated configfiles
+/db/out/*
+
 
 
 # Read the docs
