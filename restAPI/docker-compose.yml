@@ -8,7 +8,7 @@ services:
       - "27017:27017"
     command: mongod --quiet --config /etc/mongod.conf --auth
     environment:
-      - MONGO_ROCO_CERT_STRING='CN=RoCoDB,OU=RoCoDB,O=RoCo,L=Rosenheim,ST=BY,C=GE'
+      - MONGO_ROCO_CERT_STRING='C=GE,ST=BY,L=Rosenheim,O=RoCo,OU=RoCoAPI,CN=RoCoAPI'
     volumes:
       - ./../db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - ./../db/mongod.conf:/etc/mongod.conf

@@ -88,7 +88,7 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
                 throw new IllegalStateException("Failed to create SSLContext for MongoDB connection", e);
             }
             SSLContext finalSslContext = sslContext;
-            MongoClientSettings settings = MongoClientSettings.builder()
+            MongoClientSettings.Builder settingsBuilder = MongoClientSettings.builder()
                     .applyConnectionString(connectionString)
                     .applyToSslSettings(builder -> {
                         builder.enabled(true);
@@ -97,10 +97,14 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
                             builder.invalidHostNameAllowed(true);
                         }
                     })
-                    // If x509User is provided, configure X.509 auth for the sync client as well
-                    .applyToClusterSettings(builder -> {})
-                    .credential(x509User == null || x509User.isBlank() ? null : MongoCredential.createMongoX509Credential(x509User))
-                    .build();
+                    // no-op, placeholder kept from previous code
+                    .applyToClusterSettings(builder -> {});
+
+            if (x509User != null && !x509User.isBlank()) {
+                settingsBuilder.credential(MongoCredential.createMongoX509Credential(x509User));
+            }
+
+            MongoClientSettings settings = settingsBuilder.build();
             MongoClient client = MongoClients.create(settings);
             return client;
     }

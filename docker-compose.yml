@@ -18,8 +18,6 @@ services:
       - STOREPASS=123456
       - KEYPASS=123456
       - CORS_ORIGIN_ALLOWED=http://localhost:3000
-      #- MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
-      #- MONGO_INITDB_ROOT_USERNAME=backend
       - MONGO_INITDB_HOST=mongo
       - MONGO_INITDB_PORT=27017
     links:
@@ -35,9 +33,7 @@ services:
       - "27017:27017"
     command: mongod --quiet --config /etc/mongod.conf --auth 
     environment:
-      #- MONGO_INITDB_ROOT_PASSWORD=zIp3A89zA6YE5psB9YjeB
-      #- MONGO_INITDB_ROOT_USERNAME=backend
-      - MONGO_ROCO_CERT_STRING='CN=RoCoDB,OU=RoCoDB,O=RoCo,L=Rosenheim,ST=BY,C=GE'
+      - MONGO_ROCO_CERT_STRING='C=GE,ST=BY,L=Rosenheim,O=RoCo,OU=RoCoAPI,CN=RoCoAPI'
     volumes:
       - ./db/mongod.conf:/etc/mongod.conf
       - ./db/out/:/etc/ssl/:ro

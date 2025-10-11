@@ -26,16 +26,14 @@ import org.testcontainers.utility.MountableFile;
 import static de.th_rosenheim.ro_co.restapi.model.User.instantiateUser;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("integration")
 @ActiveProfiles("IntTest")
 @Testcontainers
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         classes = de.th_rosenheim.ro_co.restapi.RoCoRest.class
 )
-class QuestionControllerIT {
-
-    static final String MONGO_INITDB_ROOT_USERNAME = "deinUser";
-    static final String MONGO_INITDB_ROOT_PASSWORD = "deinPasswort";
+class QuestionControllerIT extends setUpIT{
 
     @Autowired
     private UserRepository userRepository;
@@ -49,36 +47,9 @@ class QuestionControllerIT {
     private static String accessToken;
     private static String userId;
 
-
-    @Container
-    public static GenericContainer mongoDBContainer = new GenericContainer(DockerImageName.parse("mongo:6.0.21"))
-            .withExposedPorts(27017)
-            .withEnv("MONGO_INITDB_ROOT_USERNAME", MONGO_INITDB_ROOT_USERNAME) // Passe an, falls in env_file gesetzt
-            .withEnv("MONGO_INITDB_ROOT_PASSWORD", MONGO_INITDB_ROOT_PASSWORD) // Passe an, falls in env_file gesetzt
-            .withCopyFileToContainer(
-                    MountableFile.forClasspathResource("mongo-init.js"),
-                    "/docker-entrypoint-initdb.d/mongo-init.js"
-            )
-            .waitingFor(org.testcontainers.containers.wait.strategy.Wait.forLogMessage(".*MongoDB init process complete.*", 1));
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        String host = mongoDBContainer.getHost();
-        Integer port = mongoDBContainer.getMappedPort(27017);
-        registry.add("spring.data.mongodb.host", () -> host);
-        registry.add("spring.data.mongodb.port", () -> port);
-        registry.add("spring.data.mongodb.username", () -> MONGO_INITDB_ROOT_USERNAME);
-        registry.add("spring.data.mongodb.password", () -> MONGO_INITDB_ROOT_PASSWORD);
-        registry.add("server.ssl.key-password", () -> "123456");
-        registry.add("server.ssl.key-store-password", () -> "123456");
-        registry.add("server.ssl.key-store", () -> "classpath:certs/RoCoTLS.p12");
-    }
-
-
-
+    /* Set up unirest */
     @BeforeAll
-    static void setupUnirest() {
-        mongoDBContainer.start();
+    static void setUp() {
         Unirest.config().reset();
         Unirest.config().verifySsl(false);
         Unirest.config().addDefaultHeader("Content-Type", "application/json");
@@ -86,12 +57,7 @@ class QuestionControllerIT {
     }
 
     @AfterAll
-    static void tearDown() {
-        //get mongo logs
-        mongoDBContainer.stop();
-        mongoDBContainer.close();
-        System.out.println("MongoDB logs: " + mongoDBContainer.getLogs());
-    }
+    static void tearDown() { /* base class manages container lifecycle */ }
 
     @BeforeEach
     void setupUserAndLogin() throws JSONException {

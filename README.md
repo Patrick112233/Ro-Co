@@ -15,6 +15,13 @@ We aim to offer students a safe space to ask questions about their studies and p
    cd Ro-Co
    ```
 
+2. **Ensure to distibute TLS certificates:**
+   For development and test purpose the system can be initialized as fallowed:
+   ```bash
+   ./configure.sh
+   ```
+   This reqires a linux environment or WSL.
+
 2. **Start the application using Docker Compose:**
 
    ```bash
@@ -31,8 +38,20 @@ We aim to offer students a safe space to ask questions about their studies and p
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-## Contributing 🤗
+## Manuel Configuration
 
+### RestAPI:
+All application and security configurations can be made at `restAPI/src/main/resources/application.properties`
+Ensure the availability of the fallowing files:
+   - `restAPI/src/main/resources/certs/RoCoRootCA.pem`: the Root certificate by the CA
+   - `restAPI/src/main/resources/certs/RoCoAPI.pem`: with root certificate signed certificate
+### Database:
+The database configurations are placed in:
+   - `db/mongod.conf`: the Root certificate by the CA
+   - `db/mongo-init.js`: Init script for the mongoDB
+Further the `docker-compse.yml` contained all the relevant path matching to the configurations in the `db/` folder.
+
+## Contributing 🤗
 Contributions are welcome! To contribute:
 - Fork the repository
 - Create a new branch for your feature or bugfix
