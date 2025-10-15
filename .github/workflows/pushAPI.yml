@@ -76,6 +76,8 @@ jobs:
       - name: GnerateKeyStore
         run: |
             keytool -genkeypair -alias RoCoTLS -storetype PKCS12 -keyalg RSA -keystore restAPI/src/main/resources/certs/RoCoTLS.p12 -storepass 123456 -keypass 123456 -dname "C=GE,ST=BY,L=Rosenheim,O=RoCo,OU=RoCoAPI,CN=RoCoAPI" -validity 3650
+      - name: make configurations for docker-compose
+        run: ./configure.sh
       - name: Execute integration test via Maven
         run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true
 
