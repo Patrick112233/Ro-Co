@@ -77,7 +77,7 @@ jobs:
         run: |
             keytool -genkeypair -alias RoCoTLS -storetype PKCS12 -keyalg RSA -keystore restAPI/src/main/resources/certs/RoCoTLS.p12 -storepass 123456 -keypass 123456 -dname "C=GE,ST=BY,L=Rosenheim,O=RoCo,OU=RoCoAPI,CN=RoCoAPI" -validity 3650
       - name: make configurations for docker-compose
-        run: ./configure.sh
+        run: sudo ./configure.sh
       - name: Execute integration test via Maven
         run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true
 
@@ -173,7 +173,7 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: make configurations for docker-compose
-      run: ./configure.sh
+      run: sudo ./configure.sh
     - name: Start local environment with Docker Compose
       run: docker compose up -d
     - name: Run Playwright tests
@@ -192,7 +192,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: make configurations for docker-compose
-        run: ./configure.sh
+        run: sudo ./configure.sh
       - name: Start local environment with Docker Compose
         run: docker compose up -d
       - name: Wait for API to be ready
