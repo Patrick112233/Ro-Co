@@ -77,7 +77,7 @@ jobs:
         run: |
             keytool -genkeypair -alias RoCoTLS -storetype PKCS12 -keyalg RSA -keystore restAPI/src/main/resources/certs/RoCoTLS.p12 -storepass 123456 -keypass 123456 -dname "C=GE,ST=BY,L=Rosenheim,O=RoCo,OU=RoCoAPI,CN=RoCoAPI" -validity 3650
       - name: Ensure configure.sh is executable
-        run: chmod +x ./configure.sh
+        run: chmod +x ./configure.sh ./db/Certs.sh
       - name: make configurations
         run: sudo ./configure.sh
       - name: Execute integration test via Maven
