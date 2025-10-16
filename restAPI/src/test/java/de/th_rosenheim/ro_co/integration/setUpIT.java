@@ -9,8 +9,10 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +53,7 @@ public abstract class setUpIT {
 			.withFileSystemBind(REPO_ROOT_DIR.resolve("db").resolve("out").toString(), "/etc/ssl/", BindMode.READ_ONLY)
 			.withCopyFileToContainer(MountableFile.forHostPath(REPO_ROOT_DIR.resolve("db").resolve("mongo-init.js").toString()), "/docker-entrypoint-initdb.d/mongo-init.js")
 			.withCommand("mongod --quiet --config /etc/mongod.conf --auth")
+			.withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("MongoDBContainer")))
 			// Wait for the MongoDB port to be ready; avoid relying on specific log messages that may not appear
 			.waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(90)));
 
