@@ -79,7 +79,7 @@ jobs:
       - name: Ensure configure.sh is executable
         run: chmod +x ./configure.sh ./db/Certs.sh
       - name: make configurations
-        run: sudo ./configure.sh
+        run: bash ./configure.sh
       - name: Execute integration test via Maven
         run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true
 
@@ -175,7 +175,7 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: make configurations for docker-compose
-      run: sudo ./configure.sh
+      run: bash ./configure.sh
     - name: Start local environment with Docker Compose
       run: docker compose up -d
     - name: Run Playwright tests
@@ -194,7 +194,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: make configurations for docker-compose
-        run: sudo ./configure.sh
+        run: bash ./configure.sh
       - name: Start local environment with Docker Compose
         run: docker compose up -d
       - name: Wait for API to be ready

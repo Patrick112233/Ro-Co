@@ -6,6 +6,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -17,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 
 @ActiveProfiles("IntTest")
 @Testcontainers
@@ -28,7 +30,13 @@ public abstract class setUpIT {
 	protected static final Path REPO_ROOT_DIR;
 	static {
 		try {
-			REPO_ROOT_DIR = Paths.get(System.getProperty("user.dir")).resolve("..").toRealPath();
+			// Resolve repository root robustly for both local and CI executions
+			Path userDir = Paths.get(System.getProperty("user.dir")).toRealPath();
+			if (userDir.getFileName() != null && userDir.getFileName().toString().equals("restAPI")) {
+				REPO_ROOT_DIR = userDir.getParent().toRealPath();
+			} else {
+				REPO_ROOT_DIR = userDir;
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -43,13 +51,14 @@ public abstract class setUpIT {
 			.withFileSystemBind(REPO_ROOT_DIR.resolve("db").resolve("out").toString(), "/etc/ssl/", BindMode.READ_ONLY)
 			.withCopyFileToContainer(MountableFile.forHostPath(REPO_ROOT_DIR.resolve("db").resolve("mongo-init.js").toString()), "/docker-entrypoint-initdb.d/mongo-init.js")
 			.withCommand("mongod --quiet --config /etc/mongod.conf --auth")
-			.waitingFor(org.testcontainers.containers.wait.strategy.Wait.forListeningPort())
-			.waitingFor(org.testcontainers.containers.wait.strategy.Wait.forLogMessage(".*MongoDB init process complete.*", 1));
+			// Wait for the MongoDB port to be ready; avoid relying on specific log messages that may not appear
+			.waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(90)));
 
 	@DynamicPropertySource
 	static void configureProperties(DynamicPropertyRegistry registry) {
 		String host = mongoDBContainer.getHost();
 		Integer port = mongoDBContainer.getMappedPort(27017);
+
 		registry.add("spring.data.mongodb.host", () -> host);
 		registry.add("spring.data.mongodb.port", () -> port);
 		registry.add("spring.data.mongodb.database", () -> "RoCoDB");
@@ -77,12 +86,17 @@ public abstract class setUpIT {
 		Path srcRootCA = rootCA;
 		Path dstRootCA = REPO_ROOT_DIR.resolve("restAPI").resolve("src").resolve("test").resolve("resources").resolve("certs").resolve("RoCoRootCA.pem");
 
-		try {
-			Files.createDirectories(dstClientPem.getParent());
-			Files.copy(srcClientPem, dstClientPem, StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(srcRootCA, dstRootCA, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			throw new Error("Could not copy PEM files to test resources", e);
+		// If destination files already exist and are readable (e.g., created by CI setup), skip copying
+		boolean dstClientExists = Files.isReadable(dstClientPem);
+		boolean dstRootExists = Files.isReadable(dstRootCA);
+		if (!dstClientExists || !dstRootExists) {
+			try {
+				Files.createDirectories(dstClientPem.getParent());
+				Files.copy(srcClientPem, dstClientPem, StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(srcRootCA, dstRootCA, StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				throw new Error("Could not copy PEM files to test resources", e);
+			}
 		}
 
 		// Container will be started automatically by @Container when first accessed,

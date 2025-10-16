@@ -55,6 +55,9 @@ info "Verifying generated files in: $DB_OUT_DIR"
 [[ -f "$DB_OUT_DIR/$API_PEM" ]] || fail "Missing $API_PEM in $DB_OUT_DIR (generation failed?)"
 [[ -f "$DB_OUT_DIR/$ROOT_CA_PEM" ]] || fail "Missing $ROOT_CA_PEM in $DB_OUT_DIR (generation failed?)"
 
+info "Setting readable permissions on generated PEMs (0644)"
+chmod 0644 "$DB_OUT_DIR/$API_PEM" "$DB_OUT_DIR/$ROOT_CA_PEM" || true
+
 info "Preparing destination folder: $DEST_DIR_MAIN"
 mkdir -p "$DEST_DIR_MAIN"
 
@@ -63,6 +66,8 @@ cp -f "$DB_OUT_DIR/$API_PEM" "$DEST_DIR_MAIN/$API_PEM"
 
 info "Copying $ROOT_CA_PEM -> $DEST_DIR_MAIN/$ROOT_CA_PEM (overwrite)"
 cp -f "$DB_OUT_DIR/$ROOT_CA_PEM" "$DEST_DIR_MAIN/$ROOT_CA_PEM"
+
+chmod 0644 "$DEST_DIR_MAIN/$API_PEM" "$DEST_DIR_MAIN/$ROOT_CA_PEM" || true
 
 echo
 info "Certificates placed in application resources:"
@@ -78,6 +83,8 @@ cp -f "$DB_OUT_DIR/$API_PEM" "$DEST_DIR_TEST/$API_PEM"
 
 info "Copying $ROOT_CA_PEM -> $DEST_DIR_TEST/$ROOT_CA_PEM (overwrite)"
 cp -f "$DB_OUT_DIR/$ROOT_CA_PEM" "$DEST_DIR_TEST/$ROOT_CA_PEM"
+
+chmod 0644 "$DEST_DIR_TEST/$API_PEM" "$DEST_DIR_TEST/$ROOT_CA_PEM" || true
 
 echo
 info "Certificates placed in test resources:"
