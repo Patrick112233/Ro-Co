@@ -2,6 +2,7 @@ package de.th_rosenheim.ro_co.restapi.security;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -14,6 +15,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -143,11 +145,14 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
         TrustManagerFactory tmf;
 
         ClassPathResource resource = new ClassPathResource(caFileName);
-        String pem = new String(resource.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        String pem;
+        try (InputStream caStream = resource.getInputStream()) {
+            pem = new String(caStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
         String certPem = pem.replaceAll("(?s).*?(-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----).*", "$1");
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509Certificate caCert;
-        try (InputStream certStream = new java.io.ByteArrayInputStream(certPem.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
+        try (InputStream certStream = new java.io.ByteArrayInputStream(certPem.getBytes(StandardCharsets.UTF_8))) {
             caCert = (X509Certificate) cf.generateCertificate(certStream);
         }
         /*
@@ -164,39 +169,38 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
         tmf.init(ks);
 
         // Add Client Certificate to KeyStore to authenticate to mongo DB
-        KeyManagerFactory keyFac;
-        SSLContext sslContext = null;
+        SSLContext sslContext;
         resource = new ClassPathResource(certificateKeyFileName);
-        InputStream is = resource.getInputStream();
-        try {
+        try (InputStream is = resource.getInputStream();
+             PEMParser pemParser = new PEMParser(new InputStreamReader(is))) {
             KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
             keystore.load(null); // needs to be initialised, otherwise throws exception
 
-            @SuppressWarnings("resource")
-            PEMParser pemParser = new PEMParser(new InputStreamReader(is));
-            
             Object object;
             X509Certificate certificate = null;
             PrivateKey privateKey = null;
+            JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
+            JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter();
             while ((object = pemParser.readObject()) != null) {
                 if (object instanceof X509CertificateHolder x509CertificateHolder) {
-                    JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
-                    X509CertificateHolder certificateHolder = x509CertificateHolder;
-                    certificate = certConverter.getCertificate(certificateHolder);
+                    certificate = certConverter.getCertificate(x509CertificateHolder);
                 } else if (object instanceof PEMKeyPair pemKeyPair) {
-                    KeyPair kp = new JcaPEMKeyConverter().getKeyPair(pemKeyPair);
+                    KeyPair kp = keyConverter.getKeyPair(pemKeyPair);
                     privateKey = kp.getPrivate();
+                } else if (object instanceof PrivateKeyInfo privateKeyInfo) {
+                    privateKey = keyConverter.getPrivateKey(privateKeyInfo);
                 }
             }
-            pemParser.close();
             if (certificate == null || privateKey == null) {
                 throw new IllegalStateException("Could not parse certificate or private key from PEM file");
             }
 
-            keystore.setKeyEntry("mongo", privateKey, keyPWD.toCharArray(), new Certificate[]{certificate});
-            keystore.setCertificateEntry("mongo-ca", caCert);
-            keyFac = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            keyFac.init(keystore, keyPWD.toCharArray());
+            char[] keyPassword = keyPWD.toCharArray();
+            Certificate[] chain = new Certificate[]{certificate, caCert};
+            keystore.setKeyEntry("mongo", privateKey, keyPassword, chain);
+
+            KeyManagerFactory keyFac = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyFac.init(keystore, keyPassword);
 
             // Initialize with a TLS context supporting 1.2/1.3 depending on JDK
             sslContext = SSLContext.getInstance("TLS");
@@ -205,8 +209,6 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
             //LOG.error("Error creating SSL context", e);
             //@TODO Logging
             throw new IllegalStateException("Failed to create SSLContext for MongoDB connection", e);
-        } finally {
-            is.close();
         }
         return sslContext;
     }
