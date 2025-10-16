@@ -66,6 +66,8 @@ public abstract class setUpIT {
 		registry.add("spring.data.mongodb.port", () -> port);
 		registry.add("spring.data.mongodb.database", () -> "RoCoDB");
 		registry.add("spring.data.mongodb.auto-index-creation", () -> true);
+		registry.add("spring.data.mongodb.ssl.enabled", () -> true);
+		registry.add("spring.data.mongodb.ssl.invalid-hostname-allowed", () -> true);
 
 		// TLS and X.509 properties expected by MongoTLSConfig
 		registry.add("tls.caFile.name", () -> "certs/RoCoRootCA.pem");
