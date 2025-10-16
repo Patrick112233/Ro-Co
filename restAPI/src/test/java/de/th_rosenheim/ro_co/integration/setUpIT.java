@@ -70,6 +70,9 @@ public abstract class setUpIT {
 		registry.add("security.x509.user", () -> MONGO_CERT_STRING);
 		registry.add("security.enabled", () -> false); // allow invalidHostName in tests
 		registry.add("security.keyPWD", () -> "123456");
+
+		// Increase Mongo driver logging in CI to diagnose TLS settings and connections
+		registry.add("logging.level.org.mongodb", () -> "DEBUG");
 	}
 
 	@BeforeAll

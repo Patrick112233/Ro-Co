@@ -93,9 +93,7 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
                     .applyToSslSettings(builder -> {
                         builder.enabled(true);
                         builder.context(finalSslContext);
-                        if (!secure) {
-                            builder.invalidHostNameAllowed(true);
-                        }
+                        builder.invalidHostNameAllowed(!secure);
                     })
                     // no-op, placeholder kept from previous code
                     .applyToClusterSettings(builder -> {});
@@ -106,7 +104,8 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
                 throw new IllegalStateException("MongoDB X.509 user DN not configured; cannot authenticate");
             }
 
-            MongoClientSettings settings = settingsBuilder.build();
+        System.out.println("[MongoTLSConfig] TLS enabled for Mongo client. secure=" + secure + ", caFile=" + caFileName + ", certFile=" + certificateKeyFileName + ", x509User set=" + (x509User != null && !x509User.isBlank()));
+        MongoClientSettings settings = settingsBuilder.build();
             MongoClient client = MongoClients.create(settings);
             return client;
     }
@@ -123,9 +122,7 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
                 builder.applyToSslSettings(ssl -> {
                     ssl.enabled(true);
                     ssl.context(sslContext);
-                    if (!secure) {
-                        ssl.invalidHostNameAllowed(true);
-                    }
+                    ssl.invalidHostNameAllowed(!secure);
                 });
                 if (x509User != null && !x509User.isBlank()) {
                     builder.credential(MongoCredential.createMongoX509Credential(x509User));
@@ -199,7 +196,8 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
             keyFac = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             keyFac.init(keystore, keyPWD.toCharArray());
 
-            sslContext = SSLContext.getInstance("TLSv1.2");
+            // Initialize with a TLS context supporting 1.2/1.3 depending on JDK
+            sslContext = SSLContext.getInstance("TLS");
             sslContext.init(keyFac.getKeyManagers(), tmf.getTrustManagers(), SecureRandom.getInstanceStrong());
         } catch (Exception e) {
             //LOG.error("Error creating SSL context", e);

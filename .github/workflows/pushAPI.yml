@@ -80,8 +80,18 @@ jobs:
         run: chmod +x ./configure.sh ./db/Certs.sh
       - name: make configurations
         run: bash ./configure.sh
+      - name: List generated certificates
+        run: |
+          echo "== db/out =="
+          ls -l db/out || true
+          echo "== test resources certs =="
+          ls -l restAPI/src/test/resources/certs || true
+      - name: Show certificate subjects
+        run: |
+          echo "Root CA subject:"; openssl x509 -in restAPI/src/test/resources/certs/RoCoRootCA.pem -noout -subject || true
+          echo "Client cert subject:"; openssl x509 -in restAPI/src/test/resources/certs/RoCoAPI.pem -noout -subject || true
       - name: Execute integration test via Maven
-        run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true
+        run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true -Dlogging.level.org.mongodb=DEBUG
 
 
   buildAPI:
