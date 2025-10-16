@@ -1,22 +1,33 @@
 package de.th_rosenheim.ro_co.integration;
 
+import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.MongoClientSettings;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
+import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -30,24 +41,57 @@ class MongoTlsEnforcementIT extends setUpIT {
     private String host() { return mongoDBContainer.getHost(); }
     private int port() { return mongoDBContainer.getMappedPort(27017); }
 
-    // Build an SSLContext that trusts our Root CA only (no client cert needed for handshake test)
-    private SSLContext trustRootCAContext() throws Exception {
+    // Build an SSLContext that both trusts the Root CA and presents the RoCoAPI client certificate for mTLS
+    private SSLContext clientCertContext() throws Exception {
+        // Trust store with the root CA
         ClassPathResource caRes = new ClassPathResource("certs/RoCoRootCA.pem");
+        X509Certificate caCert;
         try (InputStream is = caRes.getInputStream()) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            X509Certificate caCert = (X509Certificate) cf.generateCertificate(is);
-
-            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            trustStore.load(null);
-            trustStore.setCertificateEntry("rootCA", caCert);
-
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(trustStore);
-
-            SSLContext ctx = SSLContext.getInstance("TLS");
-            ctx.init(null, tmf.getTrustManagers(), new SecureRandom());
-            return ctx;
+            caCert = (X509Certificate) cf.generateCertificate(is);
         }
+
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(null);
+        trustStore.setCertificateEntry("rootCA", caCert);
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trustStore);
+
+        char[] keyPassword = "123456".toCharArray();
+
+        // Key store with client cert + key
+        ClassPathResource clientRes = new ClassPathResource("certs/RoCoAPI.pem");
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keyStore.load(null);
+        try (PEMParser pemParser = new PEMParser(new InputStreamReader(clientRes.getInputStream()))) {
+            Object object;
+            X509Certificate clientCert = null;
+            PrivateKey privateKey = null;
+            JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
+            JcaPEMKeyConverter keyConverter = new JcaPEMKeyConverter();
+            while ((object = pemParser.readObject()) != null) {
+                if (object instanceof X509CertificateHolder holder) {
+                    clientCert = certConverter.getCertificate(holder);
+                } else if (object instanceof PEMKeyPair pemKeyPair) {
+                    KeyPair kp = keyConverter.getKeyPair(pemKeyPair);
+                    privateKey = kp.getPrivate();
+                } else if (object instanceof PrivateKeyInfo privateKeyInfo) {
+                    privateKey = keyConverter.getPrivateKey(privateKeyInfo);
+                }
+            }
+            if (clientCert == null || privateKey == null) {
+                throw new IllegalStateException("RoCoAPI.pem must contain both certificate and private key");
+            }
+            Certificate[] chain = new Certificate[]{clientCert, caCert};
+            keyStore.setKeyEntry("mongo-client", privateKey, keyPassword, chain);
+        }
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, keyPassword);
+
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+        return ctx;
     }
 
     @Test
@@ -70,7 +114,7 @@ class MongoTlsEnforcementIT extends setUpIT {
 
     @Test
     void tls12HandshakeSucceeds() throws Exception {
-        SSLContext ctx = trustRootCAContext();
+        SSLContext ctx = clientCertContext();
         try (Socket socket = ctx.getSocketFactory().createSocket(host(), port());
              SSLSocket ssl = (SSLSocket) socket) {
             ssl.setEnabledProtocols(new String[]{"TLSv1.2", "TLSv1.3"});
@@ -81,7 +125,8 @@ class MongoTlsEnforcementIT extends setUpIT {
 
     @Test
     void tls10HandshakeIsRejectedOrDisabled() throws Exception {
-        SSLContext ctx = trustRootCAContext();
+        // For TLSv1 negative test, client cert is still required to reach mutual TLS stage
+        SSLContext ctx = clientCertContext();
         try (Socket socket = ctx.getSocketFactory().createSocket(host(), port());
              SSLSocket ssl = (SSLSocket) socket) {
             try {
