@@ -188,11 +188,13 @@ public class MongoTLSConfig extends AbstractMongoClientConfiguration {
                     privateKey = kp.getPrivate();
                 }
             }
+            pemParser.close();
             if (certificate == null || privateKey == null) {
                 throw new IllegalStateException("Could not parse certificate or private key from PEM file");
             }
 
             keystore.setKeyEntry("mongo", privateKey, keyPWD.toCharArray(), new Certificate[]{certificate});
+            keystore.setCertificateEntry("mongo-ca", caCert);
             keyFac = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             keyFac.init(keystore, keyPWD.toCharArray());
 

@@ -27,6 +27,8 @@ import java.time.Duration;
 public abstract class setUpIT {
 
 	// Exact DN of the client certificate subject used for $external user
+	//subject=CN = RoCoRootCA, OU = RoCoCA, O = RoCo, L = Rosenheim, ST = BY, C = GE
+
 	protected static final String MONGO_CERT_STRING = "C=GE,ST=BY,L=Rosenheim,O=RoCo,OU=RoCoAPI,CN=RoCoAPI";
 
 	protected static final Path REPO_ROOT_DIR;
@@ -77,7 +79,7 @@ public abstract class setUpIT {
 		registry.add("security.keyPWD", () -> "123456");
 
 		// Increase Mongo driver logging in CI to diagnose TLS settings and connections
-		registry.add("logging.level.org.mongodb", () -> "DEBUG");
+		//registry.add("logging.level.org.mongodb", () -> "DEBUG");
 	}
 
 	@BeforeAll
