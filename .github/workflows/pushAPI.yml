@@ -91,7 +91,7 @@ jobs:
           echo "Root CA subject:"; openssl x509 -in restAPI/src/test/resources/certs/RoCoRootCA.pem -noout -subject || true
           echo "Client cert subject:"; openssl x509 -in restAPI/src/test/resources/certs/RoCoAPI.pem -noout -subject || true
       - name: Execute integration test via Maven
-        run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true -Dlogging.level.org.mongodb=DEBUG
+        run: mvn -B verify --file restAPI/pom.xml -Dgroups=integration -Djacoco.skip=true -Dlogging.level.org.mongodb=DEBUG -Djavax.net.debug=ssl,handshake
 
 
   buildAPI:
